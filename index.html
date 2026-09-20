@@ -201,7 +201,7 @@
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
     <span class="chip">🧹 まほうの ほうき＝5〜9びょう とべる</span>
     <span class="chip">❓ ブロックから いろいろ でる</span>
-    <span class="chip"><kbd>R</kbd> やりなおし</span>
+    <span class="chip"><kbd>R</kbd> さいしょから やりなおし（ちゅうい！）</span>
     <button class="sound" id="sound" type="button">おと：オン</button>
   </div>
 
@@ -4241,6 +4241,28 @@
         '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
       ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
+      /* ちゅうい：R キーの せつめい */
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 15px "M PLUS Rounded 1c", system-ui, sans-serif';
+      var warn = 'ちゅうい：R を おすと さいしょから に なるからね！';
+      var ww = ctx.measureText(warn).width + 44, wy = box.by + 414;
+      ctx.fillStyle = '#fdeae4';
+      rr(W / 2 - ww / 2, wy - 17, ww, 34, 12);
+      ctx.fillStyle = '#e0563c';
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - ww / 2 + 20, wy - 8);
+      ctx.lineTo(W / 2 - ww / 2 + 27, wy + 6);
+      ctx.lineTo(W / 2 - ww / 2 + 13, wy + 6);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fdeae4';
+      ctx.font = 'bold 10px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.fillText('!', W / 2 - ww / 2 + 20, wy + 2);
+      ctx.font = 'bold 15px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.fillStyle = '#c0432c';
+      ctx.fillText(warn, W / 2 + 12, wy);
+      ctx.restore();
     } else if (state === 'reward'){
       var rbox = panel('おうさまが おれいを くれた！', [
         'がっこうで つかう ものを ひとつ えらんでね',
