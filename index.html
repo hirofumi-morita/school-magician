@@ -992,7 +992,8 @@
       return;
     }
     if (state === 'over'){
-      if (k === 'jump' || k === 'attack' || k === 'act') startStage(stage);
+      /* ハートが なくなったら キャラを えらぶ がめん（タイトル）に もどる */
+      if (k === 'jump' || k === 'attack' || k === 'act'){ reset(1); state = 'title'; }
       keys[k] = true;
       return;
     }
@@ -4122,9 +4123,10 @@
     } else if (state === 'over'){
       panel('おっとっと！', [
         'ハート が なくなっちゃった。',
+        'おんなのこ・おとこのこを えらびなおせるよ。',
         'あつめた ★：' + score + 'こ',
         'しらべた ばしょ：' + searched + ' / ' + TOTAL_FURNS
-      ], 'スペースキーで もういっかい', '#e0563c');
+      ], 'スペースキーで キャラを えらぶ がめんへ', '#e0563c');
     }
   }
 
