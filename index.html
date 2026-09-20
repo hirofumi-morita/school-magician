@@ -192,11 +192,13 @@
     <span class="chip"><kbd>E</kbd> しらべる・ドアに はいる</span>
     <span class="chip"><kbd>C</kbd> へんしん（<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>で えらぶ）</span>
     <span class="chip">タイトルで <kbd>←</kbd><kbd>→</kbd> キャラを えらぶ</span>
-    <span class="chip">おんなのこは そらで もう1かい <kbd>スペース</kbd>＝とぶ</span>
+    <span class="chip">おんなのこ＝ハート7こ・3だんジャンプ</span>
+    <span class="chip">おとこのこ＝ハート5こ・2だんジャンプ</span>
     <span class="chip">水の中では <kbd>スペース</kbd> おしっぱなしで すすむ</span>
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
     <span class="chip">🟣 どくの リンゴ＝ハート −2</span>
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
+    <span class="chip">🧹 まほうの ほうき＝15びょう とべる</span>
     <span class="chip"><kbd>R</kbd> やりなおし</span>
     <button class="sound" id="sound" type="button">おと：オン</button>
   </div>
@@ -209,16 +211,21 @@
     <b>きんの リンゴ</b>：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
     <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。
-    中には <b>お助けアイテム</b>（きんの リンゴ・ハート・★のかたまり）が あるかも。<br>
+    中には <b>お助けアイテム</b>が おいて あります。
+    <b>まほうの ほうき</b>を とると <b>15びょう そらを とべる</b>（<kbd>スペース</kbd>を
+    おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
     はじめに タイトルで <kbd>←</kbd> <kbd>→</kbd> を おして <b>おんなのこ</b>か <b>おとこのこ</b>を えらんでね。どちらも つえで まほうが うてて、ネコ・タヌキに へんしんできます。<br>
-    <b>おんなのこ</b>：そらに いるときは <b>スカートが ふわっと ひろがって</b> ゆっくり おちるよ。
-    ジャンプしたあと そらで <b>もう1かい</b> <kbd>スペース</kbd> を おして <b>おしっぱなし</b>にすると、スカートで <b>じどうで とべる</b>（れんだ しなくて いいよ）。
-    おちながら <kbd>E</kbd> を おすと かさも ひらいて もっと ゆっくり おちる。<br>
-    <b>おとこのこ</b>：スカートが ないので とべません。そのかわり そらで もう1かい <kbd>スペース</kbd> で <b>2だんジャンプ</b>が できます（2だんまで）。<br>
+    <b>おんなのこ</b>：<b>ハートが 7こ</b>で、そらで <b>もう2かい</b> <kbd>スペース</kbd> を おせる
+    <b>3だんジャンプ</b>。スカートが ふわっと ひろがって ゆっくり おちるので、
+    たかい ところにも とどきます。おちながら <kbd>E</kbd> を おすと つえの まほうじんで もっと ゆっくり。<br>
+    <b>おとこのこ</b>：<b>ハートが 5こ</b>で、そらで もう1かい <kbd>スペース</kbd> の <b>2だんジャンプ</b>。<br>
     <b>ネコ</b>：はやく はしれて 2かい ジャンプできる。からだが 小さいので <b>ネコしか とおれない あな</b>を とおれる。
     かべに むかって あるくと <b>かべに つかまって、スペースで のぼれる</b>よ。<br>
     <b>タヌキ</b>：じめんで こうげきすると たいあたり、そらで こうげきすると <b>ヒップドロップ</b>。<b>レンガを こわせる</b>。<br>
     みちに ある <b>おうちの ドア</b>の まえで <kbd>E</kbd>。中の たんすや ほんだなを しらべると ハナマルが でてくる。かくし部屋も あるよ。<br>
+    <b>ごほうび</b>：おうさまを たおすと、<b>がっこうで つかう もの</b>を ひとつ くれます。
+    <b>じょうぎ</b>・<b>あかしろぼうし</b>・<b>ふでばこ</b>から、<kbd>←</kbd> <kbd>→</kbd>（タッチは ◀ ▶）で
+    えらんで <kbd>スペース</kbd>で もらいます。<br>
     <b>ステージ2「まおうの おしろ」</b>は おしろの 中。てしたが たくさん いて、
     おくの <b>おうさまの ま</b>で ボスバトル。おうさまは <b>どくだま</b>を なげて、
     よわると <b>てしたを よびます</b>。まほう・ふみつけ・タヌキの ヒップドロップで ダメージ！
@@ -288,7 +295,15 @@
   function isGirl(p){ return p.form === 'girl' && hero === 'girl'; }
   function isBoy(p){ return p.form === 'girl' && hero === 'boy'; }
   function formName(k){ return k === 'girl' ? HERO_NAME[hero] : FORMS[k].name; }
-  function airCap(p){ return (p.form === 'cat' || isBoy(p)) ? 1 : 0; }
+  /* おんなのこは 3だんジャンプ（そらで 2かい）、おとこのこと ネコは 2だんジャンプ */
+  function airCap(p){
+    if (p.form === 'cat') return 1;
+    if (isGirl(p)) return 2;
+    if (isBoy(p)) return 1;
+    return 0;
+  }
+  /* おんなのこは ハート 7こ、おとこのこは 5こ */
+  function maxHearts(){ return hero === 'girl' ? 7 : 5; }
 
   /* ================= そとの みち（メインステージ） ================= */
   var MAIN_COLS = 216;
@@ -556,7 +571,7 @@
   var ROOMS = [
     {
       id:'house1', name:'ともだちの いえ（みどり）', cols:34, ceil:4, floor:12, paper:'#f2e0c4', wood:'#b9834c',
-      items:[['gold',13,8]],
+      items:[['broom',13,8]],
       plats:[[5,7,4],[19,7,4],[13,9,3]],
       walls:[[28,5,1,6]],
       bricks:[],
@@ -568,7 +583,7 @@
     },
     {
       id:'attic', name:'やねうら', cols:34, ceil:5, floor:12, paper:'#e7d3ae', wood:'#a9713f',
-      items:[['starbag',17,10]],
+      items:[['heart',17,10]],
       plats:[[7,9,3],[13,8,3],[20,9,3],[26,8,3]],
       walls:[], bricks:[],
       coins:[[8,8],[14,7],[21,8],[27,7],[5,10],[11,10],[17,10],[24,10],[31,10]],
@@ -591,7 +606,7 @@
     },
     {
       id:'cellar', name:'ちか', cols:34, ceil:5, floor:12, paper:'#6f6252', wood:'#5c4c3c', dark:true,
-      items:[['starbag',17,7]],
+      items:[['broom',17,7]],
       plats:[[8,9,3],[17,8,3],[25,9,3]],
       walls:[], bricks:[[13,10,1,2],[14,10,1,2]],
       coins:[[9,8],[18,7],[26,8],[4,10],[13,9],[21,10],[30,10],[31,9]],
@@ -602,7 +617,7 @@
     },
     {
       id:'house3', name:'ともだちの いえ（ふるい）', cols:34, ceil:4, floor:12, paper:'#ded0bc', wood:'#9c7a50',
-      items:[['gold',27,5],['poison',16,8]],
+      items:[['broom',27,5],['heart',16,8]],
       plats:[[4,9,3],[10,8,3],[16,9,3],[22,7,3],[27,6,4]],
       walls:[], bricks:[[13,10,1,2]],
       coins:[[5,8],[11,7],[17,8],[23,6],[28,5],[29,5],[30,5],[8,10],[14,9],[20,10]],
@@ -882,8 +897,16 @@
   var stage = 1;
   var cam = { x:0 };
   var player, particles, hearts, score, frames, searched, flash, shake, best = null;
-  var bolts, ebolts, boss, invT;   /* まほうだま／てきの どくだま／おうさま／むてき */
+  var bolts, ebolts, boss, invT, flyT;  /* まほうだま／どくだま／おうさま／むてき／とべる */
+  /* おうさまを たおすと もらえる「がっこうで つかう もの」 */
+  var PRIZES = [
+    { key:'ruler', name:'じょうぎ',      desc:'まっすぐ ひける' },
+    { key:'cap',   name:'あかしろぼうし', desc:'たいいくで かぶる' },
+    { key:'case',  name:'ふでばこ',      desc:'えんぴつが はいる' }
+  ];
+  var prize = null, prizePick = 0;
   var INV_FRAMES = 60 * 7;         /* きんの リンゴ：７びょう */
+  var FLY_FRAMES = 60 * 15;        /* まほうの ほうき：15びょう */
   var spawn = { area:'main', x:2 * TILE, y:(GROUND_ROW * TILE) - 46 };
 
   function makePlayer(){
@@ -909,7 +932,7 @@
     player.x = st0[0] * TILE;
     player.y = st0[1] * TILE - player.h;
     particles = [];
-    hearts = 5;
+    hearts = maxHearts();
     score = 0;
     searched = 0;
     frames = 0;
@@ -918,6 +941,9 @@
     bolts = [];
     ebolts = [];
     invT = 0;
+    flyT = 0;
+    prize = null;
+    prizePick = 0;
     boss = STAGE_DEFS[stage].bossX ? makeBoss(STAGE_DEFS[stage].bossX, 12) : null;
     cam.x = 0;
     spawn = { area:'main', x:st0[0] * TILE, y:st0[1] * TILE - FORMS.girl.h };
@@ -932,6 +958,22 @@
       if (k === 'left') hero = 'girl';
       else if (k === 'right') hero = 'boy';
       else if (k === 'jump' || k === 'attack' || k === 'act') start();
+      keys[k] = true;
+      return;
+    }
+    if (state === 'reward'){
+      if (k === 'left' || k === 'right'){
+        prizePick = (prizePick + (k === 'left' ? PRIZES.length - 1 : 1)) % PRIZES.length;
+        beep(760, 0.05, 'square', 0.04);
+      } else if (k === 'jump' || k === 'attack' || k === 'act'){
+        prize = PRIZES[prizePick];
+        state = 'clear';
+        melody([[880,0.12],[1046,0.12],[1320,0.28]]);
+        for (var pi = 0; pi < 24; pi++)
+          particles.push({ kind:'star', x:player.x + player.w / 2 + (Math.random() - 0.5) * 140,
+            y:player.y - Math.random() * 120, vx:(Math.random() - 0.5) * 3,
+            vy:-Math.random() * 4, life:70 });
+      }
       keys[k] = true;
       return;
     }
@@ -1142,7 +1184,8 @@
     if (b.hp <= 0){
       b.hp = 0; b.alive = false; b.dead = 70;
       ebolts = [];
-      state = 'clear';
+      state = 'reward';
+      prizePick = 0;
       melody([[660,0.14],[880,0.14],[1046,0.14],[1320,0.34]]);
       for (i = 0; i < 40; i++)
         particles.push({ kind:'star', x:b.x + b.w / 2 + (Math.random() - 0.5) * 170,
@@ -1214,16 +1257,6 @@
     }
   }
   /* よこに すすめない とき、1タイルまでの だんさなら のぼる（さか よう） */
-  /* おんなのこ：スカートを ふくらませて ひとあおぎ とぶ */
-  function skirtFlap(p){
-    p.vy = Math.max(p.vy - 6.2, -7.2);
-    p.flapCd = 9; p.flapT = 16; p.jumpHeld = true; p.cutable = false;
-    p.flying = true; p.skirt = 1;
-    beep(760, 0.07, 'triangle', 0.04);
-    particles.push({ kind:'dust', x:p.x + p.w / 2 - p.face * 8, y:p.y + p.h - 8,
-      vx:-p.face * 1.4, vy:1.2, life:16 });
-  }
-
   function moveXPlayer(e){
     var want = e.vx;
     e.bumped = false;
@@ -1459,12 +1492,11 @@
         particles.push({ kind:'dust', x:p.x + p.w / 2, y:p.y + p.h,
           vx:(Math.random() - 0.5) * 2.4, vy:-Math.random() * 1.4, life:18 });
     } else if (p.buffer > 0 && !p.onGround && !p.pound && !inWater && !clinging){
-      if (isGirl(p) && p.flapCd <= 0){
-        /* スカートを ふくらませて とぶ */
-        skirtFlap(p);
+      if (flyT > 0){
+        /* ほうきに のっている あいだは スペースを おしっぱなしで うかぶ */
         p.buffer = 0;
       } else if (p.airJumps > 0){
-        /* ネコ・おとこのこの 2だん ジャンプ */
+        /* おんなのこは 3だん、おとこのこ・ネコは 2だん ジャンプ */
         p.airJumps--; p.vy = (p.form === 'cat') ? -10.9 : -10.4;
         p.buffer = 0; p.jumpHeld = true; p.cutable = true;
         p.flapT = 12;
@@ -1474,22 +1506,22 @@
             vx:(Math.random() - 0.5) * 3.4, vy:Math.random() * 1.4, life:18 });
       }
     }
-    /* おんなのこ：そらで もういちど スペースを おすと とびはじめる。
-       そのまま おしっぱなしに していれば じどうで とびつづける（れんだ しなくて いい）。
-       じめんからの ふつうの ジャンプでは とびはじめない（ボタンを はなしてから おすこと）。 */
-    if (p.flying){
-      if (p.onGround || inWater || clinging || p.pound || !keys.jump || !isGirl(p)){
-        p.flying = false;
-      } else if (p.flapCd <= 0){
-        skirtFlap(p);
-        p.buffer = 0;
-      }
-    }
-
     if (!keys.jump) p.jumpHeld = false;
     if (p.cutable && !p.jumpHeld && p.vy < -4.0) p.vy = -4.0;
 
-    if (inWater){
+    if (!inWater && flyT > 0){
+      /* まほうの ほうき：スペースで じゆうに とべる */
+      p.vy += 0.17;
+      if (keys.jump) p.vy -= 0.80;
+      p.vy = clamp(p.vy, -6.4, 5.0);
+      p.cutable = false;
+      p.pound = false;
+      p.airJumps = airCap(p);
+      if (frames % 5 === 0)
+        particles.push({ kind:'spark', x:p.x + p.w / 2 - p.face * 10 + (Math.random() - 0.5) * 12,
+          y:p.y + p.h - 2 + (Math.random() - 0.5) * 8,
+          vx:-p.face * 1.1, vy:Math.random() * 1.2, life:18 });
+    } else if (inWater){
       p.vy += f.grav * (p.form === 'tanu' ? 0.42 : 0.26);
       if (keys.jump) p.vy -= (p.form === 'tanu' ? 0.40 : 0.64);
       p.vy = clamp(p.vy, p.form === 'tanu' ? -2.2 : -3.4, p.form === 'tanu' ? 3.8 : 2.6);
@@ -1661,6 +1693,17 @@
       }
     }
 
+    /* まほうの ほうきの のこり じかん */
+    if (flyT > 0){
+      flyT--;
+      if (flyT === 120) beep(620, 0.1, 'triangle', 0.05);
+      if (flyT === 0){
+        beep(300, 0.14, 'triangle', 0.05);
+        particles.push({ kind:'text', text:'ほうき おしまい', x:p.x + p.w / 2, y:p.y - 10,
+          vx:0, vy:-0.8, life:44 });
+      }
+    }
+
     /* スターが そろうと おしろの もんが ひらく */
     var gmain = areas.main;
     if (gmain && gmain.gate && !gmain.gate.open && score >= gmain.gate.need) openGate(gmain);
@@ -1720,8 +1763,16 @@
           vx:0, vy:-0.9, life:76 });
         if (hearts <= 0){ hearts = 0; gameOver(); }
       }
+    } else if (it.kind === 'broom'){
+      flyT = FLY_FRAMES;
+      melody([[700,0.09],[900,0.09],[1100,0.09],[1400,0.16]]);
+      particles.push({ kind:'text', text:'15びょう とべる！', x:it.x, y:it.y - 10,
+        vx:0, vy:-0.9, life:76 });
+      for (var k = 0; k < 12; k++)
+        particles.push({ kind:'spark', x:it.x + (Math.random() - 0.5) * 30, y:it.y,
+          vx:(Math.random() - 0.5) * 3, vy:-Math.random() * 3 - 0.5, life:30 });
     } else if (it.kind === 'heart'){
-      if (hearts < 5) hearts++;
+      if (hearts < maxHearts()) hearts++;
       melody([[780,0.1],[1040,0.14]]);
       particles.push({ kind:'text', text:'ハートが ふえた！', x:it.x, y:it.y - 10,
         vx:0, vy:-0.9, life:64 });
@@ -2716,6 +2767,16 @@
         ctx.restore();
         return;
       }
+      if (it.kind === 'broom'){
+        ctx.save();
+        ctx.globalAlpha = 0.24 + Math.sin(frames * 0.1) * 0.1;
+        ctx.fillStyle = '#ffe9a0';
+        ctx.beginPath(); ctx.arc(0, 0, 22, 0, 6.2832); ctx.fill();
+        ctx.restore();
+        drawBroom(0, 0, -0.5, 1);
+        ctx.restore();
+        return;
+      }
       if (it.kind === 'starbag'){
         ctx.save();
         ctx.globalAlpha = 0.28;
@@ -2757,6 +2818,39 @@
       }
       ctx.restore();
     });
+  }
+
+  /* まほうの ほうき */
+  function drawBroom(x, y, angle, scale){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.scale(scale, scale);
+    /* え */
+    ctx.strokeStyle = '#8a5a33';
+    ctx.lineWidth = 4.4;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(13, 0); ctx.stroke();
+    ctx.strokeStyle = '#6d4526';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(8, 3); ctx.stroke();
+    /* ほ（たば） */
+    ctx.fillStyle = '#d8a154';
+    ctx.beginPath();
+    ctx.moveTo(12, -4);
+    ctx.lineTo(30, -12);
+    ctx.lineTo(30, 12);
+    ctx.lineTo(12, 4);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#b07d36';
+    ctx.lineWidth = 1.4;
+    for (var i = -2; i <= 2; i++){
+      ctx.beginPath(); ctx.moveTo(14, i * 1.6); ctx.lineTo(29, i * 4.6); ctx.stroke();
+    }
+    ctx.strokeStyle = '#8a5a33';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(12, -4.5); ctx.lineTo(12, 4.5); ctx.stroke();
+    ctx.restore();
   }
 
   /* まほうだま */
@@ -3361,6 +3455,10 @@
     if (p.form === 'girl') (hero === 'boy' ? drawBoy : drawGirl)(p, walk, bob);
     else if (p.form === 'cat') drawCat(p, walk);
     else drawTanuki(p, walk);
+    if (flyT > 0){
+      var tilt = clamp(p.vy * 0.03, -0.3, 0.3);
+      drawBroom(2, -6 + Math.sin(frames * 0.14) * 1.6, tilt, 0.95);
+    }
     ctx.restore();
 
     if (p.poof > 0){
@@ -3489,6 +3587,115 @@
     ctx.restore();
   }
 
+  /* ================= がっこうで つかう もの ================= */
+  function drawRuler(){
+    ctx.save();
+    ctx.rotate(-0.2);
+    ctx.fillStyle = '#ffe9a0';
+    rr(-46, -11, 92, 22, 4);
+    ctx.fillStyle = '#e8c96a';
+    ctx.fillRect(-46, 4, 92, 7);
+    ctx.fillStyle = '#5c4a35';
+    for (var i = 0; i <= 8; i++)
+      ctx.fillRect(-42 + i * 10.5, -11, 1.8, i % 2 === 0 ? 10 : 6);
+    ctx.fillStyle = 'rgba(92,74,53,.45)';
+    ctx.fillRect(-46, -11, 92, 1.6);
+    ctx.font = 'bold 9px "M PLUS Rounded 1c", system-ui, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#5c4a35';
+    ctx.fillText('cm', 26, 6);
+    ctx.restore();
+  }
+
+  function drawCap(){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 8, 26, Math.PI, 0); ctx.closePath();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = '#e04f5a'; ctx.fillRect(-30, -22, 30, 32);
+    ctx.fillStyle = '#fdfdfb'; ctx.fillRect(0, -22, 30, 32);
+    ctx.restore();
+    ctx.strokeStyle = '#c4c0b8';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(0, 8, 26, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = '#e8e4dc';
+    rr(2, 5, 34, 10, 5);
+    ctx.fillStyle = '#cfcac0';
+    ctx.fillRect(4, 12, 30, 3);
+    ctx.fillStyle = '#ffd35c';
+    ctx.beginPath(); ctx.arc(0, -19, 4.2, 0, 6.2832); ctx.fill();
+    ctx.strokeStyle = '#d8d8d8';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(-24, 8); ctx.lineTo(-19, 18); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCase(){
+    ctx.save();
+    ctx.save();
+    ctx.translate(14, -22); ctx.rotate(0.45);
+    ctx.fillStyle = '#f2b420';
+    rr(-4, -18, 8, 28, 2);
+    ctx.fillStyle = '#e8c9a0';
+    ctx.beginPath(); ctx.moveTo(-4, -18); ctx.lineTo(0, -29); ctx.lineTo(4, -18);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#3a2f22';
+    ctx.beginPath(); ctx.moveTo(-1.7, -25); ctx.lineTo(0, -29); ctx.lineTo(1.7, -25);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#3f7fae';
+    rr(-44, -14, 88, 34, 8);
+    ctx.fillStyle = '#5b9bc9';
+    rr(-40, -10, 80, 12, 5);
+    ctx.strokeStyle = '#ffd35c';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-38, 3); ctx.lineTo(38, 3); ctx.stroke();
+    ctx.fillStyle = '#ffd35c';
+    rr(28, -2, 10, 11, 3);
+    ctx.fillStyle = '#2f6690';
+    rr(-34, 9, 24, 7, 3);
+    ctx.restore();
+  }
+
+  function drawPrizeIcon(x, y, scale, key){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    if (key === 'ruler') drawRuler();
+    else if (key === 'cap') drawCap();
+    else drawCase();
+    ctx.restore();
+  }
+
+  /* ← → で えらぶ がめん */
+  function drawPrizePick(by){
+    var cy = by + 200;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    PRIZES.forEach(function(o, i){
+      var cx = W / 2 + (i - 1) * 190;
+      var on = prizePick === i;
+      if (on){
+        ctx.fillStyle = '#3fa860';
+        rr(cx - 78, cy - 78, 156, 126, 18);
+      }
+      ctx.fillStyle = on ? '#f2fff4' : '#f2ebdf';
+      rr(cx - 75, cy - 75, 150, 120, 16);
+      ctx.save();
+      ctx.globalAlpha = on ? 1 : 0.5;
+      drawPrizeIcon(cx, cy - 34, on ? 1.05 : 0.92, o.key);
+      ctx.restore();
+      ctx.fillStyle = on ? '#1f7a44' : '#9b8b74';
+      ctx.font = 'bold 16px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.fillText(o.name, cx, cy + 14);
+      ctx.font = '12px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.fillStyle = on ? '#5f8a70' : '#b0a38d';
+      ctx.fillText(o.desc, cx, cy + 32);
+    });
+    ctx.restore();
+  }
+
   /* ================= HUD ================= */
   function timeText(f){ return (f / 60).toFixed(1) + 'びょう'; }
 
@@ -3604,7 +3811,10 @@
       rr(ix + 152, 73, 70 * (invT / INV_FRAMES), 8, 4);
     }
 
-    for (var i = 0; i < 5; i++) drawHeart(W - 184 + i * 30, 34, 12, i < hearts);
+    var mh = maxHearts();
+    var hstep = mh > 5 ? 27 : 30, hrad = mh > 5 ? 10.5 : 12;
+    var hx0 = mh > 5 ? W - 196 : W - 184;
+    for (var i = 0; i < mh; i++) drawHeart(hx0 + i * hstep, 34, hrad, i < hearts);
     formIcon(W - 184, 78, player.form);
     ctx.font = 'bold 15px "M PLUS Rounded 1c", system-ui, sans-serif';
     ctx.fillStyle = '#fff';
@@ -3614,6 +3824,26 @@
     ctx.textAlign = 'right';
     ctx.fillText('C', W - 26, 79);
     ctx.textAlign = 'left';
+
+    /* ほうきの のこり じかん */
+    if (flyT > 0){
+      var fw = 236, fx = 14, fy = invT > 0 ? 100 : 60;
+      ctx.fillStyle = 'rgba(28,22,16,0.30)';
+      rr(fx, fy, fw, 34, 13);
+      ctx.save();
+      ctx.translate(fx + 26, fy + 17);
+      ctx.scale(0.5, 0.5);
+      drawBroom(0, 0, -0.5, 1);
+      ctx.restore();
+      ctx.font = 'bold 14px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText('とべる ' + Math.ceil(flyT / 60) + 'びょう', fx + 44, fy + 18);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      rr(fx + 152, fy + 13, 70, 8, 4);
+      ctx.fillStyle = '#9adcf5';
+      rr(fx + 152, fy + 13, 70 * (flyT / FLY_FRAMES), 8, 4);
+    }
 
     /* まんなか：そとは すすみぐあい、中は へやの なまえ */
     var pw = 210, px = W / 2 - pw / 2;
@@ -3681,8 +3911,8 @@
                      umbrellaOpen:false, climb:0, face:1, vy:0 };
   function drawHeroPick(by){
     var cy = by + 198;                 /* キャラの あしもと */
-    var opts = [['girl', 'おんなのこ', 'スカートで とべる'],
-                ['boy',  'おとこのこ', '2だんジャンプ']];
+    var opts = [['girl', 'おんなのこ', 'ハート7・3だんジャンプ'],
+                ['boy',  'おとこのこ', 'ハート5・2だんジャンプ']];
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -3704,7 +3934,7 @@
       ctx.fillStyle = on ? '#b4521f' : '#9b8b74';
       ctx.font = 'bold 16px "M PLUS Rounded 1c", system-ui, sans-serif';
       ctx.fillText(o[1], cx, cy + 15);
-      ctx.font = '12px "M PLUS Rounded 1c", system-ui, sans-serif';
+      ctx.font = '11px "M PLUS Rounded 1c", system-ui, sans-serif';
       ctx.fillStyle = on ? '#8a6448' : '#b0a38d';
       ctx.fillText(o[2], cx, cy + 33);
     });
@@ -3774,18 +4004,31 @@
         '', '', '', '', '',
         'K で つえの まほう！ まおうの てしたを たおしながら すすもう。',
         'きんの リンゴで ７びょう むてき、どくリンゴは ハートが 2 へる。',
+        'ともだちの いえの ほうきを とると 15びょう そらを とべる。',
         '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
       ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
+    } else if (state === 'reward'){
+      var rbox = panel('おうさまが おれいを くれた！', [
+        'がっこうで つかう ものを ひとつ えらんでね',
+        '← → で えらぶ',
+        '', '', '', ''
+      ], 'スペース で もらう', '#3fa860');
+      drawPrizePick(rbox.by);
     } else if (state === 'clear'){
-      panel(stage === 1 ? 'おしろの もんを くぐった！' :
-            (stage === 2 ? 'まおうの おうさまを たおした！' : 'おうちに ついた！ おしまい！'), [
+      var lines = [
         'あつめた ★：' + score + 'こ',
         'しらべた ばしょ：' + searched + ' / ' + TOTAL_FURNS,
         'タイム：' + timeText(frames),
-        'のこりハート：' + hearts + ' / 5'
-      ], stage === 1 ? 'スペースキーで おしろの なかへ' : 'スペースキーで さいしょから',
-         '#3fa860');
+        'のこりハート：' + hearts + ' / ' + maxHearts()
+      ];
+      if (stage === 2 && prize) lines.unshift('もらった もの：' + prize.name);
+      var cbox = panel(stage === 1 ? 'おしろの もんを くぐった！' :
+            (stage === 2 ? 'まおうの おうさまを たおした！' : 'おうちに ついた！ おしまい！'), lines,
+        stage === 1 ? 'スペースキーで おしろの なかへ' : 'スペースキーで さいしょから',
+        '#3fa860');
+      if (stage === 2 && prize)
+        drawPrizeIcon(W / 2, cbox.by + 288, 0.85, prize.key);
     } else if (state === 'over'){
       panel('おっとっと！', [
         'ハート が なくなっちゃった。',
