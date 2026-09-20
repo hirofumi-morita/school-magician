@@ -216,7 +216,7 @@
     なにが でるかは あけるまで わかりません。<br>
     <b>きんの リンゴ</b>（<b>はてなブロックからだけ</b> でます）：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
-    <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。ぜんぶの いえに <b>つえレベルアップの だい</b>が あります（さわると つえが つよく なる。さいだい Lv3）。
+    <b>ともだちの いえ</b>：みちに <b>4けん</b> あります。ドアの まえで <kbd>E</kbd>。ぜんぶの いえに <b>つえレベルアップの だい</b>が あります（さわると つえが つよく なる。さいだい Lv3）。
     中には <b>お助けアイテム</b>が おいて あります。
     <b>まほうの ほうき</b>を とると <b>9びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
@@ -407,6 +407,7 @@
   var MAIN_HOUSES = [
     { x:38, w:4, door:1, tone:'green',  id:'h1', to:['house1','out'], label:'ともだちの いえ' },
     { x:96, w:4, door:1, tone:'yellow', id:'h2', to:['house2','out'], label:'ともだちの いえ' },
+    { x:137, w:4, door:1, tone:'blue',  id:'h5', to:['house4','out'], label:'ともだちの いえ' },
     { x:158, w:4, door:1, tone:'old',   id:'h3', to:['house3','out'], label:'ともだちの いえ' }
   ];
 
@@ -546,7 +547,7 @@
       checks:MAIN_CHECKS.map(function(x){ return [x, 12]; }),
       houses:MAIN_HOUSES, signs:MAIN_SIGNS,
       gate:{ x:199, w:2, top:3, bottom:11, need:STAR_GATE },
-      rooms:['house1','attic','house2','cellar','house3']
+      rooms:['house1','attic','house2','cellar','house3','house4']
     },
     2: {
       id:'main', name:'まおうの おしろ', theme:'castle', cols:CS_COLS,
@@ -633,6 +634,17 @@
       windows:[[9,6],[21,6]]
     },
     {
+      id:'house4', name:'ともだちの いえ（あお）', cols:34, ceil:4, floor:12, paper:'#dce9f2', wood:'#7f9fb8',
+      items:[['wand',20,11],['heart',26,7]],
+      plats:[[6,9,3],[12,7,3],[18,9,3],[24,8,4]],
+      walls:[], bricks:[[29,10,1,2]],
+      coins:[[7,8],[8,8],[13,6],[19,8],[25,7],[4,10],[10,10],[16,10],[31,9]],
+      furns:[['T',5,11],['S',10,11],['K',16,11],['b',28,11]],
+      doors:[['out',1,11]],
+      marks:[['brickhint',29,9]],
+      windows:[[9,6],[22,6]]
+    },
+    {
       id:'hut', name:'かわべの こや', cols:34, ceil:4, floor:12, paper:'#dfe7e0', wood:'#9a7b4d',
       items:[['heart',11,6]],
       plats:[[5,9,3],[10,7,2],[16,9,3],[20,10,2]],
@@ -651,6 +663,7 @@
     house2: { out:['main','h2'], sub:['cellar','out'] },
     cellar: { out:['house2','sub'] },
     house3: { out:['main','h3'] },
+    house4: { out:['main','h5'] },
     hut:    { out:['main','h4'] }
   };
 
