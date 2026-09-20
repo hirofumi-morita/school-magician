@@ -4238,6 +4238,7 @@
         'K で つえの まほう！ まおうの てしたを たおしながら すすもう。',
         'きんの リンゴで ７びょう むてき、どくリンゴは ハートが 2 へる。',
         'ともだちの いえの ほうきを とると 9びょう そらを とべる。',
+        'ともだちの いえに はいると つえを レベルアップできるよ！',
         '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
       ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
@@ -4247,7 +4248,7 @@
       ctx.textBaseline = 'middle';
       ctx.font = 'bold 15px "M PLUS Rounded 1c", system-ui, sans-serif';
       var warn = 'ちゅうい：R を おすと さいしょから に なるからね！';
-      var ww = ctx.measureText(warn).width + 44, wy = box.by + 414;
+      var ww = ctx.measureText(warn).width + 44, wy = box.by + box.bh - 88;
       ctx.fillStyle = '#fdeae4';
       rr(W / 2 - ww / 2, wy - 17, ww, 34, 12);
       ctx.fillStyle = '#e0563c';
