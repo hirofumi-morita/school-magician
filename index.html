@@ -198,7 +198,7 @@
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
     <span class="chip">🟣 どくの リンゴ＝ハート −2</span>
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
-    <span class="chip">🧹 まほうの ほうき＝15びょう とべる</span>
+    <span class="chip">🧹 まほうの ほうき＝5びょう とべる</span>
     <span class="chip">❓ ブロックから いろいろ でる</span>
     <span class="chip"><kbd>R</kbd> やりなおし</span>
     <button class="sound" id="sound" type="button">おと：オン</button>
@@ -217,7 +217,7 @@
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
     <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。
     中には <b>お助けアイテム</b>が おいて あります。
-    <b>まほうの ほうき</b>を とると <b>15びょう そらを とべる</b>（<kbd>スペース</kbd>を
+    <b>まほうの ほうき</b>を とると <b>5びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
     はじめに タイトルで <kbd>←</kbd> <kbd>→</kbd> を おして <b>おんなのこ</b>か <b>おとこのこ</b>を えらんでね。どちらも つえで まほうが うてて、ネコ・タヌキに へんしんできます。<br>
     <b>おんなのこ</b>：<b>ハートが 7こ</b>で、そらで <b>もう2かい</b> <kbd>スペース</kbd> を おせる
@@ -911,7 +911,7 @@
   ];
   var prize = null, prizePick = 0;
   var INV_FRAMES = 60 * 7;         /* きんの リンゴ：７びょう */
-  var FLY_FRAMES = 60 * 15;        /* まほうの ほうき：15びょう */
+  var FLY_FRAMES = 60 * 5;         /* まほうの ほうき：5びょう */
   var spawn = { area:'main', x:2 * TILE, y:(GROUND_ROW * TILE) - 46 };
 
   function makePlayer(){
@@ -1158,7 +1158,7 @@
   /* ================= まおうの おうさま ================= */
   function makeBoss(tx, ty){
     return { kind:'king', x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
-      vx:0, vy:0, hp:8, maxhp:8, alive:true, awake:false, onGround:false,
+      vx:0, vy:0, hp:12, maxhp:12, alive:true, awake:false, onGround:false,
       t:0, cd:140, inv:0, face:-1, dead:0, stun:0 };
   }
   function summonMinions(){
@@ -1216,8 +1216,9 @@
     if (b.inv > 0) b.inv--;
     if (b.stun > 0) b.stun--;
     b.face = (p.x + p.w / 2 < b.x + b.w / 2) ? -1 : 1;
+    var weak = b.hp <= b.maxhp * 0.35;   /* のこり すこしで はやくなる */
     if (b.stun > 0) b.vx *= 0.88;
-    else b.vx = b.face * (b.hp <= 3 ? 1.6 : 1.1);
+    else b.vx = b.face * (weak ? 1.6 : 1.1);
     b.vy += 0.7;
     if (b.vy > 16) b.vy = 16;
     moveX(b);
@@ -1226,8 +1227,8 @@
     if (b.onGround && b.stun <= 0 && b.t % 110 === 0) b.vy = -11.5;
     if (b.stun <= 0) b.cd--;
     if (b.cd <= 0){
-      b.cd = b.hp <= 3 ? 100 : 140;
-      if (b.hp <= 4 && Math.random() < 0.4) summonMinions();
+      b.cd = weak ? 100 : 140;
+      if (b.hp <= b.maxhp * 0.5 && Math.random() < 0.4) summonMinions();
       else throwPoison();
     }
     if (swingActive(p) && hit(swingBox(p), b)) hurtBoss(1);
@@ -1297,21 +1298,25 @@
       }
     }
   }
-  /* はてなブロックの なかみ（スターが でやすい） */
+  /* はてなブロックの なかみ（ぜんぶで 20こ）
+     スター 60% ／ ハート 10% ／ ほうき 10% ／ きんリンゴ 10% ／ どくリンゴ 10% */
   var QUES_LOOT = [
-    'star','star','star','star','star','star','star','star',
-    'gold','gold','gold',
-    'heart','heart','heart',
-    'broom','broom','broom',
-    'poison','poison','poison'
+    'star','star','star','star','star','star',
+    'star','star','star','star','star','star',
+    'heart','heart',
+    'broom','broom',
+    'gold','gold',
+    'poison','poison'
   ];
   function popFromQues(tx, ty){
     setTile(tx, ty, USED);
     beep(1100, 0.08, 'square', 0.05);
     setTimeout(function(){ beep(1480, 0.1, 'square', 0.05); }, 70);
-    cur.items.push({ kind:QUES_LOOT[Math.floor(Math.random() * QUES_LOOT.length)],
-      x:(tx + 0.5) * TILE, y:ty * TILE - 6, got:false, t:Math.random() * 6,
-      vy:-7.4, fly:true });
+    var kind = QUES_LOOT[Math.floor(Math.random() * QUES_LOOT.length)];
+    /* おうさまの いる ところでは ほうきは でない（とんで にげられないように） */
+    if (kind === 'broom' && cur.bossX) kind = 'star';
+    cur.items.push({ kind:kind, x:(tx + 0.5) * TILE, y:ty * TILE - 6,
+      got:false, t:Math.random() * 6, vy:-7.4, fly:true });
     for (var i = 0; i < 6; i++)
       particles.push({ kind:'spark', x:(tx + 0.5) * TILE, y:ty * TILE - 4,
         vx:(Math.random() - 0.5) * 3.4, vy:-Math.random() * 2 - 0.4, life:22 });
@@ -1797,7 +1802,7 @@
     } else if (it.kind === 'broom'){
       flyT = FLY_FRAMES;
       melody([[700,0.09],[900,0.09],[1100,0.09],[1400,0.16]]);
-      particles.push({ kind:'text', text:'15びょう とべる！', x:it.x, y:it.y - 10,
+      particles.push({ kind:'text', text:'5びょう とべる！', x:it.x, y:it.y - 10,
         vx:0, vy:-0.9, life:76 });
       for (var k = 0; k < 12; k++)
         particles.push({ kind:'spark', x:it.x + (Math.random() - 0.5) * 30, y:it.y,
@@ -4055,7 +4060,7 @@
         '', '', '', '', '',
         'K で つえの まほう！ まおうの てしたを たおしながら すすもう。',
         'きんの リンゴで ７びょう むてき、どくリンゴは ハートが 2 へる。',
-        'ともだちの いえの ほうきを とると 15びょう そらを とべる。',
+        'ともだちの いえの ほうきを とると 5びょう そらを とべる。',
         '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
       ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
