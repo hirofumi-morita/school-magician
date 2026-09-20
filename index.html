@@ -198,7 +198,7 @@
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
     <span class="chip">🟣 どくの リンゴ＝ハート −2</span>
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
-    <span class="chip">🧹 まほうの ほうき＝5びょう とべる</span>
+    <span class="chip">🧹 まほうの ほうき＝5〜9びょう とべる</span>
     <span class="chip">❓ ブロックから いろいろ でる</span>
     <span class="chip"><kbd>R</kbd> やりなおし</span>
     <button class="sound" id="sound" type="button">おと：オン</button>
@@ -213,11 +213,11 @@
     <b>はてなブロック</b>：下から あたまで つきあげるか まほうを あてると、
     <b>スター（★+3）・きんの リンゴ・どくの リンゴ・ハート・まほうの ほうき</b>の どれかが とびだします。
     なにが でるかは あけるまで わかりません。<br>
-    <b>きんの リンゴ</b>：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
+    <b>きんの リンゴ</b>（<b>はてなブロックからだけ</b> でます）：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
     <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。
     中には <b>お助けアイテム</b>が おいて あります。
-    <b>まほうの ほうき</b>を とると <b>5びょう そらを とべる</b>（<kbd>スペース</kbd>を
+    <b>まほうの ほうき</b>を とると <b>9びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
     はじめに タイトルで <kbd>←</kbd> <kbd>→</kbd> を おして <b>おんなのこ</b>か <b>おとこのこ</b>を えらんでね。どちらも つえで まほうが うてて、ネコ・タヌキに へんしんできます。<br>
     <b>おんなのこ</b>：<b>ハートが 7こ</b>で、そらで <b>もう2かい</b> <kbd>スペース</kbd> を おせる
@@ -387,14 +387,14 @@
   /* まおうの てした（じめんを あるいて おそってくる） */
   var MAIN_MINIONS = [20,36,50,68,82,104,117,138,150,172,190];
   var MAIN_BEES = [[31,8],[113,8],[178,7]];
-  /* リンゴ：gold＝７びょう むてき／poison＝ハート −2 */
+  /* リンゴ：poison＝ハート −2（きんの リンゴは はてなブロックからだけ） */
   var MAIN_ITEMS = [
-    ['gold',27,10],['poison',47,11],['gold',73,10],['poison',99,10],
-    ['gold',122,10],['poison',144,11],['gold',163,10],['poison',188,11]
+    ['poison',47,11],['poison',99,10],
+    ['poison',144,11],['poison',188,11]
   ];
   var MAIN_SIGNS = [
     [12,12,'K で つえの まほう'],
-    [44,12,'きんの リンゴで むてき'],
+    [44,12,'はてなブロックに きんの リンゴ'],
     [92,12,'どくリンゴに ちゅうい'],
     [186,12,'★50 で もんが ひらく']
   ];
@@ -435,7 +435,7 @@
   ];
   var CS_MINIONS = [10,20,30,40,50,60,70,80,90,100,110,118];
   var CS_BEES = [[22,7],[55,7],[98,7]];
-  var CS_ITEMS = [['gold',37,10],['poison',59,11],['gold',94,10],['heart',115,10]];
+  var CS_ITEMS = [['poison',59,11],['heart',115,10]];
   var CS_CHECKS = [45,95];
   var CS_SIGNS = [[6,12,'まおうは この さき'],[126,12,'おうさまの ま']];
   var CS_BOSS_X = 138;
@@ -719,10 +719,10 @@
   }
 
   /* items:[kind, tileX, tileY] */
-  function makeItems(list){
+  function makeItems(list, home){
     return (list || []).map(function(it){
       return { kind:it[0], x:(it[1] + 0.5) * TILE, y:(it[2] + 0.5) * TILE,
-               got:false, t:Math.random() * 6 };
+               got:false, t:Math.random() * 6, home:!!home };
     });
   }
 
@@ -779,7 +779,7 @@
       coins:(d.coins || []).map(function(c){
         return { x:(c[0] + 0.5) * TILE, y:(c[1] + 0.5) * TILE, got:false, t:Math.random() * 6 };
       }),
-      items:makeItems(d.items),
+      items:makeItems(d.items, true),
       enemies:[], checks:[], bossX:0, gate:null,
       doors:(d.doors || []).map(function(dr){
         return { id:dr[0], to:links[dr[0]], x:dr[1] * TILE + 3, y:(dr[2] - 1) * TILE,
@@ -902,7 +902,7 @@
   var stage = 1;
   var cam = { x:0 };
   var player, particles, hearts, score, frames, searched, flash, shake, best = null;
-  var bolts, ebolts, boss, invT, flyT;  /* まほうだま／どくだま／おうさま／むてき／とべる */
+  var bolts, ebolts, boss, invT, flyT, flyMax;  /* まほうだま／どくだま／おうさま／むてき／とべる */
   /* おうさまを たおすと もらえる「がっこうで つかう もの」 */
   var PRIZES = [
     { key:'ruler', name:'じょうぎ',      desc:'まっすぐ ひける' },
@@ -911,7 +911,8 @@
   ];
   var prize = null, prizePick = 0;
   var INV_FRAMES = 60 * 7;         /* きんの リンゴ：７びょう */
-  var FLY_FRAMES = 60 * 5;         /* まほうの ほうき：5びょう */
+  var FLY_FRAMES = 60 * 5;         /* はてなブロックの ほうき：5びょう */
+  var FLY_HOME_FRAMES = 60 * 9;    /* ともだちの いえの ほうき：9びょう */
   var spawn = { area:'main', x:2 * TILE, y:(GROUND_ROW * TILE) - 46 };
 
   function makePlayer(){
@@ -946,7 +947,7 @@
     bolts = [];
     ebolts = [];
     invT = 0;
-    flyT = 0;
+    flyT = 0; flyMax = FLY_FRAMES;
     prize = null;
     prizePick = 0;
     boss = STAGE_DEFS[stage].bossX ? makeBoss(STAGE_DEFS[stage].bossX, 12) : null;
@@ -1158,7 +1159,7 @@
   /* ================= まおうの おうさま ================= */
   function makeBoss(tx, ty){
     return { kind:'king', x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
-      vx:0, vy:0, hp:12, maxhp:12, alive:true, awake:false, onGround:false,
+      vx:0, vy:0, hp:17, maxhp:17, alive:true, awake:false, onGround:false,
       t:0, cd:140, inv:0, face:-1, dead:0, stun:0 };
   }
   function summonMinions(){
@@ -1299,7 +1300,7 @@
     }
   }
   /* はてなブロックの なかみ（ぜんぶで 20こ）
-     スター 60% ／ ハート 10% ／ ほうき 10% ／ きんリンゴ 10% ／ どくリンゴ 10% */
+     スター 60% ／ ハート 10% ／ ほうき（5びょう）10% ／ きんリンゴ 10% ／ どくリンゴ 10% */
   var QUES_LOOT = [
     'star','star','star','star','star','star',
     'star','star','star','star','star','star',
@@ -1800,9 +1801,12 @@
         if (hearts <= 0){ hearts = 0; gameOver(); }
       }
     } else if (it.kind === 'broom'){
-      flyT = FLY_FRAMES;
+      /* ともだちの いえの ほうきは 9びょう、はてなブロックの ほうきは 5びょう */
+      var fsec = it.home ? 9 : 5;
+      flyT = it.home ? FLY_HOME_FRAMES : FLY_FRAMES;
+      flyMax = flyT;
       melody([[700,0.09],[900,0.09],[1100,0.09],[1400,0.16]]);
-      particles.push({ kind:'text', text:'5びょう とべる！', x:it.x, y:it.y - 10,
+      particles.push({ kind:'text', text:fsec + 'びょう とべる！', x:it.x, y:it.y - 10,
         vx:0, vy:-0.9, life:76 });
       for (var k = 0; k < 12; k++)
         particles.push({ kind:'spark', x:it.x + (Math.random() - 0.5) * 30, y:it.y,
@@ -3898,7 +3902,7 @@
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       rr(fx + 152, fy + 13, 70, 8, 4);
       ctx.fillStyle = '#9adcf5';
-      rr(fx + 152, fy + 13, 70 * (flyT / FLY_FRAMES), 8, 4);
+      rr(fx + 152, fy + 13, 70 * (flyT / (flyMax || FLY_FRAMES)), 8, 4);
     }
 
     /* まんなか：そとは すすみぐあい、中は へやの なまえ */
@@ -4060,7 +4064,7 @@
         '', '', '', '', '',
         'K で つえの まほう！ まおうの てしたを たおしながら すすもう。',
         'きんの リンゴで ７びょう むてき、どくリンゴは ハートが 2 へる。',
-        'ともだちの いえの ほうきを とると 5びょう そらを とべる。',
+        'ともだちの いえの ほうきを とると 9びょう そらを とべる。',
         '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
       ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
