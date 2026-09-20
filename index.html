@@ -199,6 +199,7 @@
     <span class="chip">🟣 どくの リンゴ＝ハート −2</span>
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
     <span class="chip">🧹 まほうの ほうき＝15びょう とべる</span>
+    <span class="chip">❓ ブロックから いろいろ でる</span>
     <span class="chip"><kbd>R</kbd> やりなおし</span>
     <button class="sound" id="sound" type="button">おと：オン</button>
   </div>
@@ -207,7 +208,11 @@
     <b>ものがたり</b>：まおうの てしたが みちを おそってくる。てしたを たおしながら すすんで、
     ★を <b>50こ</b> あつめると <b>おしろの もんが ひらく</b>。おしろの おくに いる
     <b>まおうの おうさま</b>を たおそう！<br>
-    <b>つえの まほう</b>：<kbd>K</kbd> で まほうだまを はっしゃ。とおくの てきも たおせます。<br>
+    <b>つえの まほう</b>：<kbd>K</kbd> で まほうだまを はっしゃ。とおくの てきも たおせます。
+    まほうだまを <b>はてなブロック</b>に あてても あけられます。<br>
+    <b>はてなブロック</b>：下から あたまで つきあげるか まほうを あてると、
+    <b>スター（★+3）・きんの リンゴ・どくの リンゴ・ハート・まほうの ほうき</b>の どれかが とびだします。
+    なにが でるかは あけるまで わかりません。<br>
     <b>きんの リンゴ</b>：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
     <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。
@@ -1116,7 +1121,8 @@
       if (b.t > b.life || b.x < cam.x - 80 || b.x > cam.x + W + 80){ bolts.splice(i, 1); continue; }
       tx = Math.floor(b.x / TILE); ty = Math.floor(b.y / TILE);
       if (isSolid(tx, ty)){
-        if (tileAt(tx, ty) === BRICK && player.form === 'tanu') breakBrick(tx, ty);
+        if (tileAt(tx, ty) === QUES) popFromQues(tx, ty);
+        else if (tileAt(tx, ty) === BRICK && player.form === 'tanu') breakBrick(tx, ty);
         boltPop(b.x, b.y); bolts.splice(i, 1); continue;
       }
       gone = false;
@@ -1291,15 +1297,30 @@
       }
     }
   }
+  /* はてなブロックの なかみ（スターが でやすい） */
+  var QUES_LOOT = [
+    'star','star','star','star','star','star','star','star',
+    'gold','gold','gold',
+    'heart','heart','heart',
+    'broom','broom','broom',
+    'poison','poison','poison'
+  ];
+  function popFromQues(tx, ty){
+    setTile(tx, ty, USED);
+    beep(1100, 0.08, 'square', 0.05);
+    setTimeout(function(){ beep(1480, 0.1, 'square', 0.05); }, 70);
+    cur.items.push({ kind:QUES_LOOT[Math.floor(Math.random() * QUES_LOOT.length)],
+      x:(tx + 0.5) * TILE, y:ty * TILE - 6, got:false, t:Math.random() * 6,
+      vy:-7.4, fly:true });
+    for (var i = 0; i < 6; i++)
+      particles.push({ kind:'spark', x:(tx + 0.5) * TILE, y:ty * TILE - 4,
+        vx:(Math.random() - 0.5) * 3.4, vy:-Math.random() * 2 - 0.4, life:22 });
+  }
+
   function headBump(tx, ty){
     var t = tileAt(tx, ty);
     if (t === QUES){
-      setTile(tx, ty, USED);
-      score++;
-      beep(1100, 0.08, 'square', 0.05);
-      setTimeout(function(){ beep(1480, 0.1, 'square', 0.05); }, 70);
-      particles.push({ kind:'star', x:(tx + 0.5) * TILE, y:ty * TILE - 6, vx:0, vy:-4.2, life:40 });
-      particles.push({ kind:'text', text:'+1', x:(tx + 0.5) * TILE, y:ty * TILE - 10, vx:0, vy:-1.1, life:45 });
+      popFromQues(tx, ty);
     } else if (t === BRICK && player.form === 'tanu'){
       breakBrick(tx, ty);
     } else {
@@ -1674,6 +1695,16 @@
     /* リンゴと お助けアイテム */
     (cur.items || []).forEach(function(it){
       if (it.got) return;
+      if (it.fly){
+        it.vy += 0.44;
+        it.y += it.vy;
+        var ix = Math.floor(it.x / TILE), iy = Math.floor((it.y + 16) / TILE);
+        if (it.vy > 0 && isSolid(ix, iy)){
+          it.y = iy * TILE - 16; it.vy = 0; it.fly = false;
+        } else if (it.y > H + 300){
+          it.got = true;
+        }
+      }
       if (Math.abs((p.x + p.w / 2) - it.x) < 24 && Math.abs((p.y + p.h / 2) - it.y) < 32)
         takeItem(it);
     });
@@ -1776,6 +1807,13 @@
       melody([[780,0.1],[1040,0.14]]);
       particles.push({ kind:'text', text:'ハートが ふえた！', x:it.x, y:it.y - 10,
         vx:0, vy:-0.9, life:64 });
+    } else if (it.kind === 'star'){
+      score += 3;
+      melody([[980,0.07],[1320,0.1]]);
+      for (var si = 0; si < 5; si++)
+        particles.push({ kind:'star', x:it.x + (Math.random() - 0.5) * 22, y:it.y,
+          vx:(Math.random() - 0.5) * 2.6, vy:-Math.random() * 4 - 1, life:46 });
+      particles.push({ kind:'text', text:'★ ＋3', x:it.x, y:it.y - 12, vx:0, vy:-0.9, life:56 });
     } else if (it.kind === 'starbag'){
       score += 10;
       melody([[880,0.07],[1100,0.07],[1320,0.07],[1560,0.12]]);
@@ -2774,6 +2812,19 @@
         ctx.beginPath(); ctx.arc(0, 0, 22, 0, 6.2832); ctx.fill();
         ctx.restore();
         drawBroom(0, 0, -0.5, 1);
+        ctx.restore();
+        return;
+      }
+      if (it.kind === 'star'){
+        ctx.save();
+        ctx.globalAlpha = 0.26;
+        ctx.fillStyle = '#ffffff';
+        drawStar(0, 0, 18, frames * 0.02);
+        ctx.restore();
+        ctx.fillStyle = '#ffce2e';
+        drawStar(0, 0, 13, frames * 0.02);
+        ctx.fillStyle = '#ffe9a0';
+        drawStar(0, 0, 6, frames * 0.02);
         ctx.restore();
         return;
       }
