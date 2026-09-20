@@ -196,6 +196,7 @@
     <span class="chip">おとこのこ＝ハート5こ・2だんジャンプ</span>
     <span class="chip">水の中では <kbd>スペース</kbd> おしっぱなしで すすむ</span>
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
+    <span class="chip">🪄 いえの だいで つえレベルアップ</span>
     <span class="chip">🟣 どくの リンゴ＝ハート −2</span>
     <span class="chip">★ 50こで おしろの もんが ひらく</span>
     <span class="chip">🧹 まほうの ほうき＝5〜9びょう とべる</span>
@@ -205,17 +206,17 @@
   </div>
 
   <footer>
-    <b>ものがたり</b>：まおうの てしたが みちを おそってくる。てしたを たおしながら すすんで、
+    <b>ものがたり</b>：まおうの てしたが みちを おそってくる。てしたは <b>ハートが 3こ</b>（まほう 3はつ）。てしたを たおしながら すすんで、
     ★を <b>50こ</b> あつめると <b>おしろの もんが ひらく</b>。おしろの おくに いる
     <b>まおうの おうさま</b>を たおそう！<br>
     <b>つえの まほう</b>：<kbd>K</kbd> で まほうだまを はっしゃ。とおくの てきも たおせます。
     まほうだまを <b>はてなブロック</b>に あてても あけられます。<br>
     <b>はてなブロック</b>：下から あたまで つきあげるか まほうを あてると、
-    <b>スター（★+3）・きんの リンゴ・どくの リンゴ・ハート・まほうの ほうき</b>の どれかが とびだします。
+    <b>スター（★+3）・きんの リンゴ・どくの リンゴ・ハート・まほうの ほうき</b>の どれかが とびだします。<b>スターは じどうで もらえます</b>。
     なにが でるかは あけるまで わかりません。<br>
     <b>きんの リンゴ</b>（<b>はてなブロックからだけ</b> でます）：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
-    <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。
+    <b>ともだちの いえ</b>：みちに <b>3けん</b> あります。ドアの まえで <kbd>E</kbd>。ぜんぶの いえに <b>つえレベルアップの だい</b>が あります（さわると つえが つよく なる。さいだい Lv3）。
     中には <b>お助けアイテム</b>が おいて あります。
     <b>まほうの ほうき</b>を とると <b>9びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
@@ -576,7 +577,7 @@
   var ROOMS = [
     {
       id:'house1', name:'ともだちの いえ（みどり）', cols:34, ceil:4, floor:12, paper:'#f2e0c4', wood:'#b9834c',
-      items:[['broom',13,8]],
+      items:[['broom',13,8],['wand',26,11]],
       plats:[[5,7,4],[19,7,4],[13,9,3]],
       walls:[[28,5,1,6]],
       bricks:[],
@@ -599,7 +600,7 @@
     },
     {
       id:'house2', name:'ともだちの いえ（きいろ）', cols:34, ceil:4, floor:12, paper:'#f6e7b8', wood:'#b58448',
-      items:[['heart',14,6]],
+      items:[['heart',14,6],['wand',13,11]],
       plats:[[6,8,4],[14,7,3],[19,9,3]],
       walls:[],
       bricks:[[24,9,1,3]],
@@ -622,7 +623,7 @@
     },
     {
       id:'house3', name:'ともだちの いえ（ふるい）', cols:34, ceil:4, floor:12, paper:'#ded0bc', wood:'#9c7a50',
-      items:[['broom',27,5],['heart',16,8]],
+      items:[['broom',27,5],['heart',16,8],['wand',9,11]],
       plats:[[4,9,3],[10,8,3],[16,9,3],[22,7,3],[27,6,4]],
       walls:[], bricks:[[13,10,1,2]],
       coins:[[5,8],[11,7],[17,8],[23,6],[28,5],[29,5],[30,5],[8,10],[14,9],[20,10]],
@@ -750,10 +751,11 @@
   }
 
   /* まおうの てした */
+  var MINION_HP = 3;   /* まおうの てしたは ハート 3こ */
   function makeMinion(tx, ty){
     return { kind:'minion', x:tx * TILE + 5, y:ty * TILE - 34, w:26, h:34,
       vx:-1.05, vy:0, alive:true, onGround:false, t:Math.random() * 10,
-      dead:0, dir:-1, lastDir:-1 };
+      dead:0, dir:-1, lastDir:-1, hp:MINION_HP, maxhp:MINION_HP, inv:0, hurt:0 };
   }
 
   function buildRoom(d){
@@ -902,7 +904,7 @@
   var stage = 1;
   var cam = { x:0 };
   var player, particles, hearts, score, frames, searched, flash, shake, best = null;
-  var bolts, ebolts, boss, invT, flyT, flyMax;  /* まほうだま／どくだま／おうさま／むてき／とべる */
+  var bolts, ebolts, boss, invT, flyT, flyMax, wandLv;  /* まほうだま／どくだま／おうさま／むてき／とべる */
   /* おうさまを たおすと もらえる「がっこうで つかう もの」 */
   var PRIZES = [
     { key:'ruler', name:'じょうぎ',      desc:'まっすぐ ひける' },
@@ -929,6 +931,8 @@
     };
   }
 
+  /* ステージ1から 2へ すすむ とき、ハートと つえの レベルを もちこす */
+  var carryOver = null;
   function reset(st){
     stage = st || stage || 1;
     buildAreas(stage);
@@ -948,6 +952,12 @@
     ebolts = [];
     invT = 0;
     flyT = 0; flyMax = FLY_FRAMES;
+    wandLv = 1;
+    if (carryOver){
+      hearts = clamp(carryOver.hearts, 1, maxHearts());
+      wandLv = clamp(carryOver.wandLv, 1, WAND_MAX);
+      carryOver = null;
+    }
     prize = null;
     prizePick = 0;
     boss = STAGE_DEFS[stage].bossX ? makeBoss(STAGE_DEFS[stage].bossX, 12) : null;
@@ -985,8 +995,10 @@
     }
     if (state === 'clear'){
       if (k === 'jump' || k === 'attack' || k === 'act'){
-        if (stage === 1) startStage(2);
-        else { reset(1); state = 'title'; }
+        if (stage === 1){
+          carryOver = { hearts:hearts, wandLv:wandLv };
+          startStage(2);
+        } else { carryOver = null; reset(1); state = 'title'; }
       }
       keys[k] = true;
       return;
@@ -1102,9 +1114,11 @@
   }
 
   /* ================= つえの まほう ================= */
+  var WAND_MAX = 3;
   function castBolt(p){
     if (bolts.length >= 4) return;
-    bolts.push({ x:p.x + p.w / 2 + p.face * 16, y:p.y + 14, vx:p.face * 9.4, t:0, life:80 });
+    bolts.push({ x:p.x + p.w / 2 + p.face * 16, y:p.y + 14, vx:p.face * 9.4, t:0, life:80,
+      dmg:wandLv, lv:wandLv });
     beep(940, 0.06, 'triangle', 0.05);
     setTimeout(function(){ beep(1340, 0.08, 'triangle', 0.045); }, 50);
     particles.push({ kind:'poof', x:p.x + p.w / 2 + p.face * 16, y:p.y + 14,
@@ -1131,12 +1145,12 @@
       cur.enemies.forEach(function(e){
         if (gone || !e.alive) return;
         if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h){
-          defeat(e, false); gone = true;
+          hurtEnemy(e, b.dmg || 1, false); gone = true;
         }
       });
       if (!gone && boss && boss.alive && boss.awake &&
           b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h){
-        hurtBoss(1); gone = true;
+        hurtBoss(b.dmg || 1); gone = true;
       }
       if (gone){ boltPop(b.x, b.y); bolts.splice(i, 1); }
     }
@@ -1347,6 +1361,11 @@
     var kind = QUES_LOOT[Math.floor(Math.random() * QUES_LOOT.length)];
     /* おうさまの いる ところでは ほうきは でない（とんで にげられないように） */
     if (kind === 'broom' && cur.bossX) kind = 'star';
+    /* スターは とびだした しゅんかんに じどうで もらえる */
+    if (kind === 'star'){
+      takeItem({ kind:'star', x:(tx + 0.5) * TILE, y:ty * TILE - 10, got:false });
+      return;
+    }
     cur.items.push({ kind:kind, x:(tx + 0.5) * TILE, y:ty * TILE - 6,
       got:false, t:Math.random() * 6, vy:-7.4, fly:true });
     for (var i = 0; i < 6; i++)
@@ -1413,6 +1432,25 @@
     if (p.form === 'cat') return p.swing >= 4 && p.swing <= 11;
     if (p.form === 'tanu') return p.dash > 0;
     return false;   /* まほうつかいは つえの まほうで たたかう */
+  }
+
+  function hurtEnemy(e, dmg, bounce){
+    if (!e.alive) return;
+    if (e.kind !== 'minion' || !e.hp){ defeat(e, bounce); return; }
+    if (e.inv > 0) return;
+    e.hp -= dmg;
+    e.inv = 12;
+    e.hurt = 14;
+    if (bounce){
+      player.vy = keys.jump ? -11.5 : -8.5;
+      player.jumpHeld = keys.jump;
+      player.cutable = true;
+    }
+    if (e.hp <= 0){ e.hp = 0; defeat(e, false); return; }
+    beep(360, 0.06, 'square', 0.045);
+    for (var q = 0; q < 5; q++)
+      particles.push({ kind:'spark', x:e.x + e.w / 2, y:e.y + 10,
+        vx:(Math.random() - 0.5) * 4.4, vy:-Math.random() * 3 - 0.4, life:18 });
   }
 
   function defeat(e, bounce){
@@ -1681,6 +1719,8 @@
     /* てき */
     cur.enemies.forEach(function(e){
       if (!e.alive){ if (e.dead > 0){ e.dead--; e.y += 2.4; } return; }
+      if (e.inv > 0) e.inv--;
+      if (e.hurt > 0) e.hurt--;
       if (Math.abs(e.x - (p.x + p.w / 2)) > W * 0.9){ e.t += 0.1; return; }
       e.t += 0.1;
       if (e.kind === 'crow' || e.kind === 'minion'){
@@ -1708,11 +1748,12 @@
         e.lastDir = Math.cos(e.t * 0.22) >= 0 ? 1 : -1;
       }
 
-      if (swingActive(p) && hit(swingBox(p), e)){ defeat(e, false); return; }
+      if (swingActive(p) && hit(swingBox(p), e)){ hurtEnemy(e, 1, false); return; }
 
       if (hit(p, e)){
         var stomping = p.vy > 0.5 && (p.y + p.h - p.vy) <= e.y + 18;
-        if (stomping || p.pound) defeat(e, !p.pound);
+        if (p.pound) defeat(e, false);
+        else if (stomping) hurtEnemy(e, 1, true);
         else if (invT > 0) defeat(e, false);
         else if (p.inv <= 0) damage();
       }
@@ -1811,6 +1852,24 @@
   function takeItem(it){
     var p = player;
     it.got = true;
+    if (it.kind === 'wand'){
+      if (wandLv < WAND_MAX){
+        wandLv++;
+        melody([[660,0.1],[880,0.1],[1100,0.1],[1480,0.22]]);
+        particles.push({ kind:'text', text:'つえが レベル ' + wandLv + ' に！', x:it.x, y:it.y - 16,
+          vx:0, vy:-0.9, life:96 });
+        flash = Math.max(flash, 14);
+      } else {
+        score += 10;
+        melody([[880,0.09],[1100,0.16]]);
+        particles.push({ kind:'text', text:'もう さいこうレベル！ ★+10', x:it.x, y:it.y - 16,
+          vx:0, vy:-0.9, life:96 });
+      }
+      for (var wq = 0; wq < 18; wq++)
+        particles.push({ kind:'spark', x:it.x + (Math.random() - 0.5) * 30, y:it.y - 6,
+          vx:(Math.random() - 0.5) * 3.4, vy:-Math.random() * 3.4 - 0.5, life:34 });
+      return;
+    }
     if (it.kind === 'gold'){
       invT = INV_FRAMES;
       melody([[880,0.1],[1100,0.1],[1320,0.16]]);
@@ -2708,7 +2767,18 @@
   function drawMinion(e){
     var sx = e.x - cam.x, sy = e.y;
     if (sx < -60 || sx > W + 60) return;
+    /* のこりの ハート（ダメージを うけた ときだけ だす） */
+    if (e.alive && e.hp < e.maxhp){
+      var pw = 5, gap = 3, tot = e.maxhp * pw + (e.maxhp - 1) * gap;
+      for (var hpI = 0; hpI < e.maxhp; hpI++){
+        ctx.fillStyle = hpI < e.hp ? '#ff6b6b' : 'rgba(255,255,255,0.35)';
+        ctx.beginPath();
+        ctx.arc(sx + e.w / 2 - tot / 2 + hpI * (pw + gap) + pw / 2, sy - 9, pw / 2, 0, 6.2832);
+        ctx.fill();
+      }
+    }
     ctx.save();
+    if (e.alive && e.hurt > 0 && (frames % 4 < 2)) ctx.globalAlpha = 0.45;
     ctx.translate(sx + e.w / 2, sy + e.h);
     if (!e.alive){ ctx.globalAlpha = Math.max(0, e.dead / 40); ctx.scale(1, 0.35); }
     ctx.scale(e.lastDir === 1 ? -1 : 1, 1);
@@ -2845,6 +2915,44 @@
         ctx.restore();
         return;
       }
+      if (it.kind === 'wand'){
+        /* つえの だい：ひかる いしの うえで つえが くるくる まわる */
+        ctx.restore();
+        ctx.save();
+        ctx.translate(sx, it.y);
+        ctx.fillStyle = 'rgba(0,0,0,0.14)';
+        ctx.beginPath(); ctx.ellipse(0, 22, 20, 5, 0, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = '#9b8bb4';
+        rr(-18, 10, 36, 12, 4);
+        ctx.fillStyle = '#b9abcd';
+        rr(-13, -2, 26, 13, 4);
+        ctx.save();
+        ctx.globalAlpha = 0.22 + Math.sin(frames * 0.09) * 0.12;
+        ctx.fillStyle = '#ffe9a0';
+        ctx.beginPath(); ctx.arc(0, -16, 24, 0, 6.2832); ctx.fill();
+        ctx.restore();
+        var wob = Math.sin(frames * 0.05) * 0.25;
+        ctx.save();
+        ctx.translate(0, -18 + Math.sin(frames * 0.06) * 3);
+        ctx.rotate(wob);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(0, -8); ctx.stroke();
+        ctx.fillStyle = '#ffce2e';
+        drawStar(0, -13, 9, frames * 0.05);
+        ctx.fillStyle = '#fff6cc';
+        drawStar(0, -13, 4, frames * 0.05);
+        ctx.restore();
+        ctx.font = 'bold 12px "M PLUS Rounded 1c", system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        var lbl = 'つえレベルアップ', lw = ctx.measureText(lbl).width + 16;
+        ctx.fillStyle = 'rgba(255,255,255,0.82)';
+        rr(-lw / 2, -54, lw, 20, 8);
+        ctx.fillStyle = '#5a4632';
+        ctx.fillText(lbl, 0, -44);
+        ctx.restore();
+        return;
+      }
       if (it.kind === 'broom'){
         ctx.save();
         ctx.globalAlpha = 0.24 + Math.sin(frames * 0.1) * 0.1;
@@ -2950,14 +3058,15 @@
       var sx = b.x - cam.x;
       if (sx < -40 || sx > W + 40) return;
       ctx.save();
+      var lv = b.lv || 1, bs = 1 + (lv - 1) * 0.22;
       ctx.globalAlpha = 0.35;
-      ctx.fillStyle = '#ffe9a0';
-      ctx.beginPath(); ctx.arc(sx, b.y, 14, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = lv >= 3 ? '#ffd0f0' : (lv === 2 ? '#d8f0ff' : '#ffe9a0');
+      ctx.beginPath(); ctx.arc(sx, b.y, 14 * bs, 0, 6.2832); ctx.fill();
       ctx.restore();
-      ctx.fillStyle = '#ffd35c';
-      drawStar(sx, b.y, 10, b.t * 0.35);
+      ctx.fillStyle = lv >= 3 ? '#ff87d4' : (lv === 2 ? '#62c8ff' : '#ffd35c');
+      drawStar(sx, b.y, 10 * bs, b.t * 0.35);
       ctx.fillStyle = '#fffdf0';
-      drawStar(sx, b.y, 4.4, b.t * 0.35);
+      drawStar(sx, b.y, 4.4 * bs, b.t * 0.35);
     });
     ebolts.forEach(function(b){
       var sx = b.x - cam.x;
@@ -3885,6 +3994,28 @@
     }
     ctx.fillStyle = '#fff';
 
+    /* つえの レベル */
+    var wx = 262;
+    ctx.fillStyle = 'rgba(28,22,16,0.30)';
+    rr(wx, 12, 112, 42, 14);
+    ctx.save();
+    ctx.translate(wx + 22, 33);
+    ctx.rotate(-0.45);
+    ctx.strokeStyle = '#d9b48a';
+    ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(0, -5); ctx.stroke();
+    ctx.fillStyle = '#ffce2e';
+    drawStar(0, -10, 7, frames * 0.04);
+    ctx.restore();
+    ctx.font = 'bold 15px "M PLUS Rounded 1c", system-ui, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('つえ', wx + 38, 34);
+    for (var wl = 0; wl < WAND_MAX; wl++){
+      ctx.fillStyle = wl < wandLv ? '#ffce2e' : 'rgba(255,255,255,0.28)';
+      drawStar(wx + 76 + wl * 15, 33, 6, 0);
+    }
+
     /* むてきの のこり じかん */
     if (invT > 0){
       var iw = 236, ix = 14;
@@ -4116,10 +4247,10 @@
       if (stage === 2 && prize) lines.unshift('もらった もの：' + prize.name);
       var cbox = panel(stage === 1 ? 'おしろの もんを くぐった！' :
             (stage === 2 ? 'まおうの おうさまを たおした！' : 'おうちに ついた！ おしまい！'), lines,
-        stage === 1 ? 'スペースキーで おしろの なかへ' : 'スペースキーで さいしょから',
+        stage === 1 ? 'スペースキーで おしろの なかへ' : 'スペースキーで ホームがめんに もどる',
         '#3fa860');
       if (stage === 2 && prize)
-        drawPrizeIcon(W / 2, cbox.by + 288, 0.85, prize.key);
+        drawPrizeIcon(W / 2, cbox.by + 252, 0.8, prize.key);
     } else if (state === 'over'){
       panel('おっとっと！', [
         'ハート が なくなっちゃった。',
