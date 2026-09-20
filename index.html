@@ -234,7 +234,7 @@
     えらんで <kbd>スペース</kbd>で もらいます。<br>
     <b>ステージ2「まおうの おしろ」</b>は おしろの 中。てしたが たくさん いて、
     おくの <b>おうさまの ま</b>で ボスバトル。おうさまは <b>どくだま</b>を なげて、
-    <b>5びょうごとに てしたを 3たい よびます</b>。たたかいが はじまると <b>ハートが ぜんぶ かいふく</b>します。まほう・ふみつけ・タヌキの ヒップドロップで ダメージ！
+    <b>7びょうごとに てしたを 3たい よびます</b>（よばれた てしたは <b>ハート10こ</b>で タフ）。たたかいが はじまると <b>ハートが ぜんぶ かいふく</b>します。まほう・ふみつけ・タヌキの ヒップドロップで ダメージ！
     ステージ1を クリアすると つづけて あそべます（タイトルで <kbd>2</kbd>）。<br>
     <b>おまけ</b>：タイトルで <kbd>3</kbd> を おすと、かわを およいで わたる ステージで あそべます。
   </footer>
@@ -1174,12 +1174,13 @@
   /* ================= まおうの おうさま ================= */
   function makeBoss(tx, ty){
     return { kind:'king', x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
-      vx:0, vy:0, hp:17, maxhp:17, alive:true, awake:false, onGround:false,
+      vx:0, vy:0, hp:30, maxhp:30, alive:true, awake:false, onGround:false,
       t:0, cd:140, scd:SUMMON_EVERY, inv:0, face:-1, dead:0, stun:0 };
   }
-  var SUMMON_EVERY = 60 * 5;   /* 5びょうに 1かい てしたを よぶ */
+  var SUMMON_EVERY = 60 * 7;   /* 7びょうに 1かい てしたを よぶ */
   var SUMMON_COUNT = 3;        /* 1かいに 3たい */
   var SUMMON_MAX = 6;          /* よんだ てしたが のこって いい かず */
+  var CALLED_HP = 10;          /* おうさまが よんだ てしたは ハート 10こ */
   /* おうさまが よんだ てしただけ かぞえる（もともと おしろに いる てしたは かぞえない） */
   function calledMinions(){
     var n = 0;
@@ -1196,6 +1197,7 @@
       mx = clamp(mx, 1, cur.cols - 2);
       m = makeMinion(mx, 12);
       m.called = true;
+      m.hp = m.maxhp = CALLED_HP;   /* よばれた てしたは つよい */
       cur.enemies.push(m);
     }
     beep(240, 0.12, 'square', 0.05);
@@ -1271,7 +1273,7 @@
       b.cd = weak ? 100 : 140;
       throwPoison();
     }
-    /* てしたよび：5びょうごとに 3たい */
+    /* てしたよび：7びょうごとに 3たい */
     b.scd--;
     if (b.scd <= 0){
       b.scd = SUMMON_EVERY;
@@ -2769,12 +2771,21 @@
     if (sx < -60 || sx > W + 60) return;
     /* のこりの ハート（ダメージを うけた ときだけ だす） */
     if (e.alive && e.hp < e.maxhp){
-      var pw = 5, gap = 3, tot = e.maxhp * pw + (e.maxhp - 1) * gap;
-      for (var hpI = 0; hpI < e.maxhp; hpI++){
-        ctx.fillStyle = hpI < e.hp ? '#ff6b6b' : 'rgba(255,255,255,0.35)';
-        ctx.beginPath();
-        ctx.arc(sx + e.w / 2 - tot / 2 + hpI * (pw + gap) + pw / 2, sy - 9, pw / 2, 0, 6.2832);
-        ctx.fill();
+      if (e.maxhp > 5){
+        /* ハートが おおい てした（おうさまが よんだ てした）は バーで だす */
+        var bw = 34, bx = sx + e.w / 2 - bw / 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        rr(bx, sy - 13, bw, 5, 2.5);
+        ctx.fillStyle = '#ff6b6b';
+        rr(bx, sy - 13, bw * (e.hp / e.maxhp), 5, 2.5);
+      } else {
+        var pw = 5, gap = 3, tot = e.maxhp * pw + (e.maxhp - 1) * gap;
+        for (var hpI = 0; hpI < e.maxhp; hpI++){
+          ctx.fillStyle = hpI < e.hp ? '#ff6b6b' : 'rgba(255,255,255,0.35)';
+          ctx.beginPath();
+          ctx.arc(sx + e.w / 2 - tot / 2 + hpI * (pw + gap) + pw / 2, sy - 9, pw / 2, 0, 6.2832);
+          ctx.fill();
+        }
       }
     }
     ctx.save();
