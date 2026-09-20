@@ -233,7 +233,7 @@
     えらんで <kbd>スペース</kbd>で もらいます。<br>
     <b>ステージ2「まおうの おしろ」</b>は おしろの 中。てしたが たくさん いて、
     おくの <b>おうさまの ま</b>で ボスバトル。おうさまは <b>どくだま</b>を なげて、
-    よわると <b>てしたを よびます</b>。まほう・ふみつけ・タヌキの ヒップドロップで ダメージ！
+    <b>5びょうごとに てしたを 3たい よびます</b>。まほう・ふみつけ・タヌキの ヒップドロップで ダメージ！
     ステージ1を クリアすると つづけて あそべます（タイトルで <kbd>2</kbd>）。<br>
     <b>おまけ</b>：タイトルで <kbd>3</kbd> を おすと、かわを およいで わたる ステージで あそべます。
   </footer>
@@ -1160,17 +1160,31 @@
   function makeBoss(tx, ty){
     return { kind:'king', x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
       vx:0, vy:0, hp:17, maxhp:17, alive:true, awake:false, onGround:false,
-      t:0, cd:140, inv:0, face:-1, dead:0, stun:0 };
+      t:0, cd:140, scd:SUMMON_EVERY, inv:0, face:-1, dead:0, stun:0 };
+  }
+  var SUMMON_EVERY = 60 * 5;   /* 5びょうに 1かい てしたを よぶ */
+  var SUMMON_COUNT = 3;        /* 1かいに 3たい */
+  var SUMMON_MAX = 6;          /* よんだ てしたが のこって いい かず */
+  /* おうさまが よんだ てしただけ かぞえる（もともと おしろに いる てしたは かぞえない） */
+  function calledMinions(){
+    var n = 0;
+    (cur.enemies || []).forEach(function(e){ if (e.called && e.alive) n++; });
+    return n;
   }
   function summonMinions(){
-    var b = boss, i, mx;
-    for (i = 0; i < 2; i++){
-      mx = Math.floor(b.x / TILE) + (i === 0 ? -3 : 3);
+    var b = boss, i, mx, m, room = SUMMON_MAX - calledMinions();
+    if (room <= 0) return;
+    var n = Math.min(SUMMON_COUNT, room);
+    var offs = [-4, 4, 8];
+    for (i = 0; i < n; i++){
+      mx = Math.floor(b.x / TILE) + offs[i];
       mx = clamp(mx, 1, cur.cols - 2);
-      cur.enemies.push(makeMinion(mx, 12));
+      m = makeMinion(mx, 12);
+      m.called = true;
+      cur.enemies.push(m);
     }
     beep(240, 0.12, 'square', 0.05);
-    particles.push({ kind:'text', text:'てしたを よんだ！', x:b.x + b.w / 2, y:b.y - 14,
+    particles.push({ kind:'text', text:'てしたを ' + n + 'たい よんだ！', x:b.x + b.w / 2, y:b.y - 14,
       vx:0, vy:-0.7, life:60 });
   }
   function throwPoison(){
@@ -1229,8 +1243,13 @@
     if (b.stun <= 0) b.cd--;
     if (b.cd <= 0){
       b.cd = weak ? 100 : 140;
-      if (b.hp <= b.maxhp * 0.5 && Math.random() < 0.4) summonMinions();
-      else throwPoison();
+      throwPoison();
+    }
+    /* てしたよび：5びょうごとに 3たい */
+    b.scd--;
+    if (b.scd <= 0){
+      b.scd = SUMMON_EVERY;
+      summonMinions();
     }
     if (swingActive(p) && hit(swingBox(p), b)) hurtBoss(1);
     if (hit(p, b)){
