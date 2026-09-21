@@ -216,7 +216,8 @@
     なにが でるかは あけるまで わかりません。<br>
     <b>きんの リンゴ</b>（<b>はてなブロックからだけ</b> でます）：とると <b>7びょう むてき</b>。むてきの あいだは てきに ぶつかっても へいきで、
     ぶつかった てきは たおせます。<b>どくの リンゴ</b>（むらさき）は <b>ハートが 2 へる</b>ので よけよう。<br>
-    <b>ともだちの いえ</b>：みちに <b>4けん</b> あります。ドアの まえで <kbd>E</kbd>。ぜんぶの いえに <b>つえレベルアップの だい</b>が あります（さわると つえが つよく なる。さいだい Lv3）。
+    <b>ともだちの いえ</b>：みちに <b>4けん</b> あります。ドアの まえで <kbd>E</kbd>。ぜんぶの いえに <b>つえレベルアップの だい</b>が あります（さわると つえが つよく なる。さいだい Lv3）。<br>
+    <b>たからばこ</b>を しらべると <b>きんの リンゴ（12びょう むてき）・どくの リンゴ・スター2こ</b>の どれかが じどうで もらえます。
     中には <b>お助けアイテム</b>が おいて あります。
     <b>まほうの ほうき</b>を とると <b>9びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
@@ -917,7 +918,7 @@
   var stage = 1;
   var cam = { x:0 };
   var player, particles, hearts, score, frames, searched, flash, shake, best = null;
-  var bolts, ebolts, boss, invT, flyT, flyMax, wandLv;  /* まほうだま／どくだま／おうさま／むてき／とべる */
+  var bolts, ebolts, boss, invT, invMax, flyT, flyMax, wandLv;  /* まほうだま／どくだま／おうさま／むてき／とべる */
   /* おうさまを たおすと もらえる「がっこうで つかう もの」 */
   var PRIZES = [
     { key:'ruler', name:'じょうぎ',      desc:'まっすぐ ひける' },
@@ -926,6 +927,7 @@
   ];
   var prize = null, prizePick = 0;
   var INV_FRAMES = 60 * 7;         /* きんの リンゴ：７びょう */
+  var INV_CHEST_FRAMES = 60 * 12;  /* たからばこの きんリンゴ：12びょう */
   var FLY_FRAMES = 60 * 5;         /* はてなブロックの ほうき：5びょう */
   var FLY_HOME_FRAMES = 60 * 9;    /* ともだちの いえの ほうき：9びょう */
   var spawn = { area:'main', x:2 * TILE, y:(GROUND_ROW * TILE) - 46 };
@@ -963,7 +965,7 @@
     shake = 0;
     bolts = [];
     ebolts = [];
-    invT = 0;
+    invT = 0; invMax = INV_FRAMES;
     flyT = 0; flyMax = FLY_FRAMES;
     wandLv = 1;
     if (carryOver){
@@ -1529,9 +1531,34 @@
     setTimeout(function(){ beep(700, 0.12, 'triangle', 0.05); }, 80);
     particles.push({ kind:'text', text:cur.name, x:p.x + p.w / 2, y:p.y - 16, vx:0, vy:-0.5, life:75 });
   }
+  /* たからばこの なかみ：きんリンゴ 40% ／ どくリンゴ 40% ／ スター2こ 20% */
+  var CHEST_LOOT = ['gold','gold','gold','gold','poison','poison','poison','poison','star2','star2'];
+  function openChest(f){
+    var kind = CHEST_LOOT[Math.floor(Math.random() * CHEST_LOOT.length)];
+    var cx = f.x + f.w / 2, cy = f.y - 6;
+    beep(900, 0.07, 'square', 0.05);
+    setTimeout(function(){ beep(1200, 0.08, 'square', 0.05); }, 70);
+    for (var i = 0; i < 10; i++)
+      particles.push({ kind:'spark', x:cx + (Math.random() - 0.5) * f.w, y:f.y,
+        vx:(Math.random() - 0.5) * 3.6, vy:-Math.random() * 3.6 - 0.6, life:28 });
+    if (kind === 'star2'){
+      score += 2;
+      melody([[980,0.07],[1320,0.1]]);
+      for (var si = 0; si < 6; si++)
+        particles.push({ kind:'star', x:cx + (Math.random() - 0.5) * 26, y:cy,
+          vx:(Math.random() - 0.5) * 2.6, vy:-Math.random() * 4 - 1, life:48 });
+      particles.push({ kind:'text', text:'たからばこ！ ★ ＋2', x:cx, y:cy - 12,
+        vx:0, vy:-0.9, life:66 });
+      return;
+    }
+    /* きんリンゴ・どくリンゴは じどうで もらう（ひろいに いかなくて いい） */
+    takeItem({ kind:kind, x:cx, y:cy, got:false, chest:true });
+  }
+
   function searchFurn(f){
     f.searched = true;
     searched++;
+    if (f.kind === 'X'){ openChest(f); return; }
     score += f.reward;
     beep(900, 0.07, 'square', 0.05);
     setTimeout(function(){ beep(1200, 0.08, 'square', 0.05); }, 70);
@@ -1887,9 +1914,12 @@
       return;
     }
     if (it.kind === 'gold'){
-      invT = INV_FRAMES;
+      /* たからばこの きんリンゴは 12びょう、はてなブロックのは 7びょう */
+      var isec = it.chest ? 12 : 7;
+      invT = it.chest ? INV_CHEST_FRAMES : INV_FRAMES;
+      invMax = invT;
       melody([[880,0.1],[1100,0.1],[1320,0.16]]);
-      particles.push({ kind:'text', text:'７びょう むてき！', x:it.x, y:it.y - 10,
+      particles.push({ kind:'text', text:isec + 'びょう むてき！', x:it.x, y:it.y - 10,
         vx:0, vy:-0.9, life:72 });
     } else if (it.kind === 'poison'){
       if (invT > 0){
@@ -4055,7 +4085,7 @@
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       rr(ix + 152, 73, 70, 8, 4);
       ctx.fillStyle = '#ffce2e';
-      rr(ix + 152, 73, 70 * (invT / INV_FRAMES), 8, 4);
+      rr(ix + 152, 73, 70 * (invT / (invMax || INV_FRAMES)), 8, 4);
     }
 
     var mh = maxHearts();
