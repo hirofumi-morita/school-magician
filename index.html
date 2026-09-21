@@ -1531,8 +1531,10 @@
     setTimeout(function(){ beep(700, 0.12, 'triangle', 0.05); }, 80);
     particles.push({ kind:'text', text:cur.name, x:p.x + p.w / 2, y:p.y - 16, vx:0, vy:-0.5, life:75 });
   }
-  /* たからばこの なかみ：きんリンゴ 40% ／ どくリンゴ 40% ／ スター2こ 20% */
-  var CHEST_LOOT = ['gold','gold','gold','gold','poison','poison','poison','poison','star2','star2'];
+  /* たからばこの なかみ：きんリンゴ 50% ／ どくリンゴ 30% ／ スター2こ 20% */
+  var CHEST_LOOT = ['gold','gold','gold','gold','gold',
+                    'poison','poison','poison',
+                    'star2','star2'];
   function openChest(f){
     var kind = CHEST_LOOT[Math.floor(Math.random() * CHEST_LOOT.length)];
     var cx = f.x + f.w / 2, cy = f.y - 6;
