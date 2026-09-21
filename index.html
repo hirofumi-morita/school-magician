@@ -165,7 +165,7 @@
 <div class="wrap">
   <header>
     <h1>しょうがくせいの <span class="mark">まほうつかい</span></h1>
-    <span class="tag">ステージ1・ともだちの みち ／ ステージ2・まおうの おしろ</span>
+    <span class="tag">みち → まおうの おしろ → こおりの おしろ → せかいの はて</span>
   </header>
 
   <div class="stage">
@@ -564,7 +564,31 @@
       blocks:CS_BLOCKS, bricks:CS_BRICKS, ques:CS_QUES, coins:CS_COINS,
       crows:[], bees:CS_BEES, fish:[], minions:CS_MINIONS, items:CS_ITEMS,
       checks:CS_CHECKS.map(function(x){ return [x, 12]; }),
-      houses:[], signs:CS_SIGNS, bossX:CS_BOSS_X,
+      houses:[], signs:CS_SIGNS, bossX:CS_BOSS_X, bossTier:1,
+      rooms:[]
+    },
+    4: {
+      id:'main', name:'こおりの おしろ', theme:'castle', tint:['#16263f','#2b4d72'], cols:CS_COLS,
+      goalX:0, goalTop:12, goalKind:'boss', goalLabel:'こおりの まおう', buildingX:0,
+      start:[2,12],
+      ground:CS_GROUND, slopes:[], water:[],
+      blocks:CS_BLOCKS, bricks:CS_BRICKS, ques:CS_QUES, coins:CS_COINS,
+      crows:[], bees:CS_BEES, fish:[], minions:CS_MINIONS, items:CS_ITEMS,
+      checks:CS_CHECKS.map(function(x){ return [x, 12]; }),
+      houses:[], signs:[[6,12,'こおりの まおうが まってる'],[126,12,'まおうの ま']],
+      bossX:CS_BOSS_X, bossTier:2,
+      rooms:[]
+    },
+    5: {
+      id:'main', name:'せかいの はての おしろ', theme:'castle', tint:['#3b0f14','#6b2a1c'], cols:CS_COLS,
+      goalX:0, goalTop:12, goalKind:'boss', goalLabel:'さいきょうの おうさま', buildingX:0,
+      start:[2,12],
+      ground:CS_GROUND, slopes:[], water:[],
+      blocks:CS_BLOCKS, bricks:CS_BRICKS, ques:CS_QUES, coins:CS_COINS,
+      crows:[], bees:CS_BEES, fish:[], minions:CS_MINIONS, items:CS_ITEMS,
+      checks:CS_CHECKS.map(function(x){ return [x, 12]; }),
+      houses:[], signs:[[6,12,'せかいで いちばん つよい おうさま'],[126,12,'さいごの ま']],
+      bossX:CS_BOSS_X, bossTier:3,
       rooms:[]
     },
     3: {
@@ -734,6 +758,7 @@
       doors:doors, furns:[], marks:[], windows:[],
       houses:def.houses || [], signs:def.signs || [],
       bossX:def.bossX || 0,
+      tint:def.tint || null,
       gate:def.gate ? { x:def.gate.x, w:def.gate.w, top:def.gate.top,
                         bottom:def.gate.bottom, need:def.gate.need, open:false } : null
     };
@@ -981,7 +1006,7 @@
     }
     prize = null;
     prizePick = 0;
-    boss = STAGE_DEFS[stage].bossX ? makeBoss(STAGE_DEFS[stage].bossX, 12) : null;
+    boss = STAGE_DEFS[stage].bossX ? makeBoss(STAGE_DEFS[stage].bossX, 12, STAGE_DEFS[stage].bossTier || 1) : null;
     cam.x = 0;
     spawn = { area:'main', x:st0[0] * TILE, y:st0[1] * TILE - FORMS.girl.h };
   }
@@ -1022,9 +1047,10 @@
     }
     if (state === 'clear'){
       if (k === 'jump' || k === 'attack' || k === 'act'){
-        if (stage === 1){
+        var next = NEXT_STAGE[stage];
+        if (next){
           carryOver = { hearts:hearts, wandLv:wandLv };
-          startStage(2);
+          startStage(next);
         } else { carryOver = null; reset(1); state = 'title'; }
       }
       keys[k] = true;
@@ -1070,6 +1096,8 @@
     if (e.code === 'Digit1'){ e.preventDefault(); if (state === 'title') startStage(1); else pickForm('girl'); }
     else if (e.code === 'Digit2'){ e.preventDefault(); if (state === 'title') startStage(2); else pickForm('cat'); }
     else if (e.code === 'Digit3'){ e.preventDefault(); if (state === 'title') startStage(3); else pickForm('tanu'); }
+    else if (e.code === 'Digit4'){ e.preventDefault(); if (state === 'title') startStage(4); }
+    else if (e.code === 'Digit5'){ e.preventDefault(); if (state === 'title') startStage(5); }
     else if (e.code === 'KeyR'){ e.preventDefault(); startStage(stage); }
     else if (e.code === 'KeyM'){ soundBtn.click(); }
   });
@@ -1093,6 +1121,8 @@
   window.addEventListener('touchstart', function(){ document.body.classList.add('touch'); },
     { once:true, passive:true });
 
+  /* ステージの つながり：みち → まおうの おしろ → こおりの おしろ → せかいの はて */
+  var NEXT_STAGE = { 1:2, 2:4, 4:5 };
   function startStage(n){
     reset(n);
     state = 'play';
@@ -1199,13 +1229,27 @@
   }
 
   /* ================= まおうの おうさま ================= */
-  function makeBoss(tx, ty){
-    return { kind:'king', x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
-      vx:0, vy:0, hp:48, maxhp:48, alive:true, awake:false, onGround:false,
-      t:0, cd:140, scd:SUMMON_EVERY, inv:0, face:-1, dead:0, stun:0 };
+  /* 3にんの おうさま。たおすと つぎの おうさまが まっている */
+  var KINGS = {
+    1: { name:'まおうの おうさま', hp:48, spd:1.1, fast:1.6, cd:140, summon:60 * 7, count:3,
+         cloak:'#6a2340', body:'#4b3b6b', belt:'#ffd35c', head:'#7b9a63',
+         orb:'#9c56c8', orb2:'#d9a6f0', bar:'#e04f6b', bolt:'#8e4fb0', bolt2:'#d9a6f0' },
+    2: { name:'こおりの まおう', hp:70, spd:1.45, fast:2.0, cd:115, summon:60 * 6, count:3,
+         cloak:'#17416b', body:'#2d6ea8', belt:'#cdf3ff', head:'#8fd3e8',
+         orb:'#49c7f0', orb2:'#e4faff', bar:'#49c7f0', bolt:'#2f9fd8', bolt2:'#cdf3ff' },
+    3: { name:'せかいで いちばん つよい おうさま', hp:100, spd:1.8, fast:2.4, cd:95, summon:60 * 5, count:4,
+         cloak:'#5a1220', body:'#8a1d1d', belt:'#ffd35c', head:'#d2a24c',
+         orb:'#ff8a3d', orb2:'#ffe1a8', bar:'#ff7a3d', bolt:'#e0562a', bolt2:'#ffd0a8' }
+  };
+  function makeBoss(tx, ty, tier){
+    var k = KINGS[tier] || KINGS[1];
+    return { kind:'king', tier:tier || 1, col:k, name:k.name,
+      x:tx * TILE, y:ty * TILE - 66, w:46, h:66,
+      vx:0, vy:0, hp:k.hp, maxhp:k.hp, alive:true, awake:false, onGround:false,
+      t:0, cd:k.cd, scd:k.summon, inv:0, face:-1, dead:0, stun:0 };
   }
-  var SUMMON_EVERY = 60 * 7;   /* 7びょうに 1かい てしたを よぶ */
-  var SUMMON_COUNT = 3;        /* 1かいに 3たい */
+  var SUMMON_EVERY = 60 * 7;   /* 7びょうに 1かい てしたを よぶ（おうさま1） */
+  var SUMMON_COUNT = 3;        /* 1かいに 3たい（おうさま1） */
   var SUMMON_MAX = 6;          /* よんだ てしたが のこって いい かず */
   var CALLED_HP = 10;          /* おうさまが よんだ てしたは ハート 10こ */
   /* おうさまが よんだ てしただけ かぞえる（もともと おしろに いる てしたは かぞえない） */
@@ -1217,8 +1261,8 @@
   function summonMinions(){
     var b = boss, i, mx, m, room = SUMMON_MAX - calledMinions();
     if (room <= 0) return;
-    var n = Math.min(SUMMON_COUNT, room);
-    var offs = [-4, 4, 8];
+    var n = Math.min((b.col && b.col.count) || SUMMON_COUNT, room);
+    var offs = [-4, 4, 8, -8];
     for (i = 0; i < n; i++){
       mx = Math.floor(b.x / TILE) + offs[i];
       mx = clamp(mx, 1, cur.cols - 2);
@@ -1266,7 +1310,7 @@
       if (p.x + p.w > (cur.bossX - 9) * TILE){
         b.awake = true;
         melody([[220,0.2],[180,0.2],[140,0.34]]);
-        particles.push({ kind:'text', text:'まおうの おうさま あらわる！',
+        particles.push({ kind:'text', text:b.name + ' あらわる！',
           x:b.x + b.w / 2, y:b.y - 24, vx:0, vy:-0.4, life:120 });
         /* たたかいの まえに ハートを ぜんぶ かいふく */
         if (hearts < maxHearts()){
@@ -1288,7 +1332,7 @@
     b.face = (p.x + p.w / 2 < b.x + b.w / 2) ? -1 : 1;
     var weak = b.hp <= b.maxhp * 0.35;   /* のこり すこしで はやくなる */
     if (b.stun > 0) b.vx *= 0.88;
-    else b.vx = b.face * (weak ? 1.6 : 1.1);
+    else b.vx = b.face * (weak ? b.col.fast : b.col.spd);
     b.vy += 0.7;
     if (b.vy > 16) b.vy = 16;
     moveX(b);
@@ -1297,13 +1341,13 @@
     if (b.onGround && b.stun <= 0 && b.t % 110 === 0) b.vy = -11.5;
     if (b.stun <= 0) b.cd--;
     if (b.cd <= 0){
-      b.cd = weak ? 100 : 140;
+      b.cd = weak ? Math.round(b.col.cd * 0.72) : b.col.cd;
       throwPoison();
     }
-    /* てしたよび：7びょうごとに 3たい */
+    /* てしたよび：おうさまごとの かんかくで よぶ */
     b.scd--;
     if (b.scd <= 0){
-      b.scd = SUMMON_EVERY;
+      b.scd = b.col.summon;
       summonMinions();
     }
     if (swingActive(p) && hit(swingBox(p), b)) hurtBoss(1);
@@ -1783,16 +1827,29 @@
         e.vy += 0.6; if (e.vy > 12) e.vy = 12;
         if (!e.dir) e.dir = e.vx >= 0 ? 1 : -1;
         e.bumped = false;
-        e.vx = (e.kind === 'minion' ? 1.05 : 0.65) * e.dir;
+        /* てしたは キャラを 見つけると おいかけてくる */
+        var chasing = false;
+        if (e.kind === 'minion'){
+          var pcx = p.x + p.w / 2, ecx = e.x + e.w / 2;
+          chasing = Math.abs(pcx - ecx) < TILE * 14;
+          if (chasing) e.dir = pcx < ecx ? -1 : 1;
+        }
+        e.vx = (e.kind === 'minion' ? (chasing ? 1.75 : 1.05) : 0.65) * e.dir;
         moveX(e);
-        if (e.bumped) e.dir = -e.dir;
+        if (e.bumped){
+          /* かべに ぶつかったら むきを かえる。おいかけて いる ときは とびこえる */
+          if (chasing && e.onGround) e.vy = -10.2;
+          else e.dir = -e.dir;
+        }
         moveY(e, false);
         resolveSlope(e, true);
-        if (e.onGround){
+        if (e.onGround && !chasing){
           var aheadX = Math.floor((e.dir > 0 ? e.x + e.w + 4 : e.x - 4) / TILE);
           var belowY = Math.floor((e.y + e.h + 4) / TILE);
           if (!isSolid(aheadX, belowY) && !isSlopeT(tileAt(aheadX, belowY))) e.dir = -e.dir;
         }
+        /* あなに おちたら きえる */
+        if (e.y > (ROWS + 6) * TILE){ e.alive = false; e.dead = 0; }
         e.lastDir = e.dir;
       } else if (e.kind === 'fish'){
         e.x = e.homeX + Math.sin(e.t * 0.16) * TILE * 2.4;
@@ -2909,8 +2966,9 @@
     ctx.translate(0, -hop);
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.beginPath(); ctx.ellipse(0, 2, 26, 6, 0, 0, 6.2832); ctx.fill();
+    var kc = b.col || KINGS[1];
     /* マント */
-    ctx.fillStyle = '#6a2340';
+    ctx.fillStyle = kc.cloak;
     ctx.beginPath();
     ctx.moveTo(-6, -52);
     ctx.quadraticCurveTo(-34, -34, -26, 0);
@@ -2922,21 +2980,21 @@
     rr(-12, -14, 10, 14, 4);
     rr(3, -14, 10, 14, 4);
     /* からだ */
-    ctx.fillStyle = '#4b3b6b';
+    ctx.fillStyle = kc.body;
     rr(-17, -46, 34, 34, 12);
-    ctx.fillStyle = '#ffd35c';
+    ctx.fillStyle = kc.belt;
     rr(-9, -34, 18, 6, 3);
     /* つえ */
     ctx.strokeStyle = '#8a5a33';
     ctx.lineWidth = 4.4;
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(19, -8); ctx.lineTo(23, -56); ctx.stroke();
-    ctx.fillStyle = '#9c56c8';
+    ctx.fillStyle = kc.orb;
     ctx.beginPath(); ctx.arc(23, -62, 8, 0, 6.2832); ctx.fill();
-    ctx.fillStyle = '#d9a6f0';
+    ctx.fillStyle = kc.orb2;
     ctx.beginPath(); ctx.arc(21, -64, 3, 0, 6.2832); ctx.fill();
     /* あたま */
-    ctx.fillStyle = '#7b9a63';
+    ctx.fillStyle = kc.head;
     ctx.beginPath(); ctx.arc(0, -58, 14, 0, 6.2832); ctx.fill();
     /* ひげ */
     ctx.fillStyle = '#e8e2d2';
@@ -3143,12 +3201,13 @@
       if (sx < -40 || sx > W + 40) return;
       ctx.save();
       ctx.globalAlpha = 0.3;
-      ctx.fillStyle = '#c78fe0';
+      var bc = (boss && boss.col) || KINGS[1];
+      ctx.fillStyle = bc.bolt2;
       ctx.beginPath(); ctx.arc(sx, b.y, 15, 0, 6.2832); ctx.fill();
       ctx.restore();
-      ctx.fillStyle = '#8e4fb0';
+      ctx.fillStyle = bc.bolt;
       ctx.beginPath(); ctx.arc(sx, b.y, 9, 0, 6.2832); ctx.fill();
-      ctx.fillStyle = '#d9a6f0';
+      ctx.fillStyle = bc.bolt2;
       ctx.beginPath(); ctx.arc(sx - 3, b.y - 3, 3, 0, 6.2832); ctx.fill();
     });
   }
@@ -3196,8 +3255,9 @@
   /* おしろの 中の はいけい */
   function castleBg(){
     var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#2a2036');
-    g.addColorStop(1, '#4b3a50');
+    var tn = (cur && cur.tint) || ['#2a2036', '#4b3a50'];
+    g.addColorStop(0, tn[0]);
+    g.addColorStop(1, tn[1]);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(0,0,0,0.22)';
@@ -4247,10 +4307,10 @@
     ctx.fillStyle = '#fff';
     if (boss && boss.awake && boss.alive){
       ctx.font = 'bold 13px "M PLUS Rounded 1c", system-ui, sans-serif';
-      ctx.fillText('まおうの おうさま', W / 2, 24);
+      ctx.fillText(boss.name, W / 2, 24);
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       rr(px, 38, pw, 8, 4);
-      ctx.fillStyle = '#e04f6b';
+      ctx.fillStyle = boss.col.bar;
       rr(px, 38, pw * (boss.hp / boss.maxhp), 8, 4);
     } else if (cur.kind === 'outdoor'){
       ctx.font = 'bold 13px "M PLUS Rounded 1c", system-ui, sans-serif';
@@ -4287,6 +4347,10 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#2f2418';
     ctx.font = '32px "Mochiy Pop One", "M PLUS Rounded 1c", system-ui, sans-serif';
+    var tw = ctx.measureText(title).width, tmax = bw - 56;
+    if (tw > tmax)
+      ctx.font = Math.max(17, Math.floor(32 * tmax / tw)) +
+        'px "Mochiy Pop One", "M PLUS Rounded 1c", system-ui, sans-serif';
     ctx.fillText(title, W / 2, by + 62);
     ctx.font = '18px "M PLUS Rounded 1c", system-ui, sans-serif';
     ctx.fillStyle = '#5c4a35';
@@ -4399,10 +4463,10 @@
         '', '', '', '', '',
         'K で つえの まほう！ まおうの てしたを たおしながら すすもう。',
         'きんの リンゴで ７びょう むてき、どくリンゴは ハートが 2 へる。',
-        'ともだちの いえの ほうきを とると 9びょう そらを とべる。',
-        'ともだちの いえに はいると つえを レベルアップできるよ！',
-        '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。'
-      ], 'スペース で はじめる ／ 2キー おしろ ／ 3キー かわ', '#e07a3c');
+        'ともだちの いえで ほうき（9びょう とべる）と つえレベルアップ！',
+        '★を 50こ あつめると おしろの もんが ひらいて おうさまと たたかえる。',
+        'おうさまは 3にん！ たおすと つぎの おしろへ すすめるよ。'
+      ], 'スペース で はじめる ／ 2・4・5キー おしろ ／ 3キー かわ', '#e07a3c');
       drawHeroPick(box.by);
       /* ちゅうい：R キーの せつめい */
       ctx.save();
@@ -4427,7 +4491,7 @@
       ctx.fillText(warn, W / 2 + 12, wy);
       ctx.restore();
     } else if (state === 'reward'){
-      var rbox = panel('おうさまが おれいを くれた！', [
+      var rbox = panel((stage === 5 ? 'さいきょうの おうさま' : (stage === 4 ? 'こおりの まおう' : 'おうさま')) + 'が おれいを くれた！', [
         'がっこうで つかう ものを ひとつ えらんでね',
         '', '', '', '', '',
         '← → で えらんで、スペースキーで けってい！'
@@ -4440,13 +4504,20 @@
         'タイム：' + timeText(frames),
         'のこりハート：' + hearts + ' / ' + maxHearts()
       ];
-      if (stage === 2 && prize) lines.unshift('もらった もの：' + prize.name);
-      var cbox = panel(stage === 1 ? 'おしろの もんを くぐった！' :
-            (stage === 2 ? 'まおうの おうさまを たおした！' : 'おうちに ついた！ おしまい！'), lines,
-        stage === 1 ? 'スペースキーで おしろの なかへ' : 'スペースキーで ホームがめんに もどる',
-        '#3fa860');
-      if (stage === 2 && prize)
-        drawPrizeIcon(W / 2, cbox.by + 252, 0.8, prize.key);
+      if (prize) lines.unshift('もらった もの：' + prize.name);
+      var ctitle = 'おうちに ついた！ おしまい！';
+      if (stage === 1) ctitle = 'おしろの もんを くぐった！';
+      else if (stage === 2) ctitle = 'まおうの おうさまを たおした！';
+      else if (stage === 4) ctitle = 'こおりの まおうを たおした！';
+      else if (stage === 5) ctitle = 'せかいで いちばん つよい おうさまを たおした！';
+      var chint = 'スペースキーで ホームがめんに もどる';
+      if (stage === 1) chint = 'スペースキーで おしろの なかへ';
+      else if (stage === 2) chint = 'スペースキーで こおりの おしろへ';
+      else if (stage === 4) chint = 'スペースキーで せかいの はての おしろへ';
+      if (stage === 5) lines.unshift('せかいいち つよい まほうつかいに なった！');
+      var cbox = panel(ctitle, lines, chint, stage === 5 ? '#e0a53c' : '#3fa860');
+      if (prize)
+        drawPrizeIcon(W / 2, cbox.by + 108 + lines.length * 29 + 26, 0.8, prize.key);
     } else if (state === 'over'){
       panel('おっとっと！', [
         'ハート が なくなっちゃった。',
