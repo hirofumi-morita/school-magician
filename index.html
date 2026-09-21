@@ -195,6 +195,7 @@
     <span class="chip">おんなのこ＝ハート30こ・3だんジャンプ</span>
     <span class="chip">おとこのこ＝ハート25こ・2だんジャンプ</span>
     <span class="chip">せんせい＝ハート50こ・つえLv3・7だんジャンプ</span>
+    <span class="chip">うちゅうじん＝ハート1こ・5だんジャンプ</span>
     <span class="chip">水の中では <kbd>スペース</kbd> おしっぱなしで すすむ</span>
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
     <span class="chip">🪄 いえの だいで つえレベルアップ</span>
@@ -222,11 +223,14 @@
     中には <b>お助けアイテム</b>が おいて あります。
     <b>まほうの ほうき</b>を とると <b>9びょう そらを とべる</b>（<kbd>スペース</kbd>を
     おしっぱなしで うかんで、はなすと しずむ）。<b>ハート</b>を とると <b>ハートが 1つ ふえる</b>。<br>
-    はじめに タイトルで <kbd>←</kbd> <kbd>→</kbd> を おして <b>おんなのこ</b>・<b>おとこのこ</b>・<b>せんせい</b>から えらんでね。ぜんいん つえで まほうが うてて、ネコ・タヌキに へんしんできます。<br>
+    はじめに タイトルで <kbd>←</kbd> <kbd>→</kbd> を おして <b>おんなのこ</b>・<b>おとこのこ</b>・<b>せんせい</b>・<b>うちゅうじん</b>から えらんでね。ぜんいん つえで まほうが うてて、ネコ・タヌキに へんしんできます。<br>
     <b>おんなのこ</b>：<b>ハートが 30こ</b>で、そらで <b>もう2かい</b> <kbd>スペース</kbd> を おせる
     <b>3だんジャンプ</b>。スカートが ふわっと ひろがって ゆっくり おちるので、
     たかい ところにも とどきます。おちながら <kbd>E</kbd> を おすと つえの まほうじんで もっと ゆっくり。<br>
     <b>おとこのこ</b>：<b>ハートが 25こ</b>で、そらで もう1かい <kbd>スペース</kbd> の <b>2だんジャンプ</b>。<br>
+    <b>せんせい</b>：<b>ハートが 50こ</b>で、さいしょから <b>つえが さいこうレベル</b>。そらで もう6かい とべる <b>7だんジャンプ</b>。<br>
+    <b>うちゅうじん</b>：<b>ハートは 1こだけ</b>！ 1かい あたると おしまいの むずかしい モード。
+    そのかわり そらで <b>もう4かい</b> とべる <b>5だんジャンプ</b>で、どこへでも いけるよ。<br>
     <b>ネコ</b>：はやく はしれて 2かい ジャンプできる。からだが 小さいので <b>ネコしか とおれない あな</b>を とおれる。
     かべに むかって あるくと <b>かべに つかまって、スペースで のぼれる</b>よ。<br>
     <b>タヌキ</b>：じめんで こうげきすると たいあたり、そらで こうげきすると <b>ヒップドロップ</b>。<b>レンガを こわせる</b>。<br>
@@ -299,22 +303,36 @@
   /* えらんだ キャラ（girl = おんなのこ／boy = おとこのこ）。
      おとこのこは スカートが ないので とべない。かわりに 2だんジャンプが できる。 */
   var hero = 'girl';
-  var HEROES = ['girl', 'boy', 'sensei'];
-  var HERO_NAME = { girl:'おんなのこ', boy:'おとこのこ', sensei:'せんせい' };
+  var HEROES = ['girl', 'boy', 'sensei', 'alien'];
+  var HERO_NAME = { girl:'おんなのこ', boy:'おとこのこ', sensei:'せんせい', alien:'うちゅうじん' };
   function isGirl(p){ return p.form === 'girl' && hero === 'girl'; }
   function isBoy(p){ return p.form === 'girl' && hero === 'boy'; }
   function isSensei(p){ return p.form === 'girl' && hero === 'sensei'; }
+  function isAlien(p){ return p.form === 'girl' && hero === 'alien'; }
   function formName(k){ return k === 'girl' ? HERO_NAME[hero] : FORMS[k].name; }
+  /* えらんだ キャラを えがく かんすうを かえす */
+  function heroDraw(h){
+    if (h === 'boy') return drawBoy;
+    if (h === 'sensei') return drawSensei;
+    if (h === 'alien') return drawAlien;
+    return drawGirl;
+  }
   /* おんなのこは 3だんジャンプ（そらで 2かい）、おとこのこと ネコは 2だんジャンプ */
   function airCap(p){
     if (p.form === 'cat') return 1;
     if (isSensei(p)) return 6;    /* せんせいは 7だんジャンプ（そらで 6かい） */
+    if (isAlien(p)) return 4;     /* うちゅうじんは 5だんジャンプ（そらで 4かい） */
     if (isGirl(p)) return 2;
     if (isBoy(p)) return 1;
     return 0;
   }
-  /* おんなのこは ハート 30こ、おとこのこは 25こ、せんせいは 50こ */
-  function maxHearts(){ return hero === 'girl' ? 30 : (hero === 'sensei' ? 50 : 25); }
+  /* おんなのこ 30こ、おとこのこ 25こ、せんせい 50こ、うちゅうじんは 1こだけ！ */
+  function maxHearts(){
+    if (hero === 'girl') return 30;
+    if (hero === 'sensei') return 50;
+    if (hero === 'alien') return 1;
+    return 25;
+  }
   /* せんせいは さいしょから つえが さいこうレベル */
   function startWandLv(){ return hero === 'sensei' ? 3 : 1; }
 
@@ -3570,6 +3588,73 @@
     }
   }
 
+  /* うちゅうじん：ハートは 1こだけ。そのかわり 5だんジャンプが できる */
+  function drawAlien(p, walk, bob){
+    /* ぎんいろの ランドセル */
+    ctx.fillStyle = '#9fb3c8';
+    rr(-16, -32, 11, 18, 3);
+    ctx.fillStyle = '#7a8fa6';
+    ctx.fillRect(-16, -24, 11, 3);
+    ctx.fillStyle = '#7ef0d0';
+    ctx.fillRect(-11, -20, 4, 3);
+    /* あし */
+    ctx.fillStyle = '#4fbf86';
+    rr(-7 - walk * 0.5, -13, 6, 13, 3);
+    rr(1 + walk * 0.5, -13, 6, 13, 3);
+    ctx.fillStyle = '#2f3f6b';
+    rr(-9 - walk * 0.5, -4, 9, 5, 2.5);
+    rr(0 + walk * 0.5, -4, 9, 5, 2.5);
+    /* うちゅうふく */
+    ctx.fillStyle = '#5fd6a2';
+    rr(-9, -34, 18, 22, 6);
+    ctx.fillStyle = '#3fae7f';
+    ctx.fillRect(-9, -22, 18, 3);
+    /* むねの ひかる まる */
+    ctx.fillStyle = '#eafff6';
+    ctx.beginPath(); ctx.arc(0, -28, 4.2, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = '#35c9ff';
+    ctx.beginPath(); ctx.arc(0, -28, 2.3 + Math.sin(frames * 0.12) * 0.5, 0, 6.2832); ctx.fill();
+    /* うで */
+    ctx.fillStyle = '#49c48e';
+    rr(-13, -33 - (p.onGround ? walk * 0.4 : 4), 5.4, 12, 3);
+    var aArm = p.swing > 0 ? -36 : -33 + (p.onGround ? walk * 0.4 : -4);
+    ctx.fillStyle = '#5fd6a2';
+    rr(8.4, aArm, 5.4, 13, 3);
+    /* おおきな あたま */
+    ctx.fillStyle = '#6fe0ae';
+    ctx.beginPath(); ctx.ellipse(1, -44, 10.5, 11.5, 0, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.32)';
+    ctx.beginPath(); ctx.ellipse(-3, -49, 3.4, 2.2, -0.5, 0, 6.2832); ctx.fill();
+    /* しょっかく */
+    var wob = Math.sin(frames * 0.09) * 1.8;
+    ctx.strokeStyle = '#3fae7f';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-4, -52); ctx.quadraticCurveTo(-7, -58, -5 + wob, -62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(6, -52); ctx.quadraticCurveTo(9, -58, 7 - wob, -62); ctx.stroke();
+    ctx.fillStyle = '#ffe873';
+    ctx.beginPath(); ctx.arc(-5 + wob, -63, 2.5, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.arc(7 - wob, -63, 2.5, 0, 6.2832); ctx.fill();
+    /* おおきな め */
+    ctx.fillStyle = '#1b2230';
+    ctx.beginPath(); ctx.ellipse(-3.2, -45, 3.5, 5, 0.22, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(5.6, -45, 3.5, 5, -0.22, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(-4, -47, 1.2, 1.7, 0.22, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(4.8, -47, 1.2, 1.7, -0.22, 0, 6.2832); ctx.fill();
+    /* くち */
+    ctx.strokeStyle = '#2b6b50';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(1.2, -38, 2.6, 0.12 * Math.PI, 0.88 * Math.PI); ctx.stroke();
+    /* つえ */
+    if (p.swing > 0){
+      var at = 1 - (p.swing / 16);
+      drawWand(-1.5 + Math.min(1, at * 2) * 1.3);
+    } else {
+      drawWand(p.onGround ? 0.16 + walk * 0.012 : 0.44);
+    }
+  }
+
   function drawGirl(p, walk, bob){
     /* ランドセル */
     ctx.fillStyle = '#c8384f';
@@ -3859,7 +3944,7 @@
     ctx.scale(1 + sq * 0.16, 1 - sq * 0.16);
     if (p.climb) ctx.rotate(-0.2);
     ctx.translate(0, -bob);
-    if (p.form === 'girl') (hero === 'boy' ? drawBoy : (hero === 'sensei' ? drawSensei : drawGirl))(p, walk, bob);
+    if (p.form === 'girl') heroDraw(hero)(p, walk, bob);
     else if (p.form === 'cat') drawCat(p, walk);
     else drawTanuki(p, walk);
     if (flyT > 0){
@@ -4122,7 +4207,21 @@
   function formIcon(x, y, form){
     ctx.save();
     ctx.translate(x, y);
-    if (form === 'girl' && hero === 'sensei'){
+    if (form === 'girl' && hero === 'alien'){
+      ctx.strokeStyle = '#3fae7f';
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-3.6, -5); ctx.lineTo(-5, -10); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3.6, -5); ctx.lineTo(5, -10); ctx.stroke();
+      ctx.fillStyle = '#ffe873';
+      ctx.beginPath(); ctx.arc(-5, -11, 1.8, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.arc(5, -11, 1.8, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = '#6fe0ae';
+      ctx.beginPath(); ctx.ellipse(0, 1, 7.6, 8.4, 0, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = '#1b2230';
+      ctx.beginPath(); ctx.ellipse(-3, 1, 2.5, 3.6, 0.22, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(3, 1, 2.5, 3.6, -0.22, 0, 6.2832); ctx.fill();
+    } else if (form === 'girl' && hero === 'sensei'){
       ctx.fillStyle = '#f2c79c';
       ctx.beginPath(); ctx.arc(0, 1, 8, 0, 6.2832); ctx.fill();
       ctx.fillStyle = '#2b2119';
@@ -4369,31 +4468,40 @@
                      umbrellaOpen:false, climb:0, face:1, vy:0 };
   function drawHeroPick(by){
     var cy = by + 198;                 /* キャラの あしもと */
-    var opts = [['girl',   'おんなのこ', 'ハート30・3だんジャンプ'],
-                ['boy',    'おとこのこ', 'ハート25・2だんジャンプ'],
-                ['sensei', 'せんせい',   'ハート50・つえLv3・7だんジャンプ']];
+    var opts = [['girl',   'おんなのこ',   'ハート30・3だんジャンプ'],
+                ['boy',    'おとこのこ',   'ハート25・2だんジャンプ'],
+                ['sensei', 'せんせい',     'ハート50・つえLv3・7だんジャンプ'],
+                ['alien',  'うちゅうじん', 'ハート1こ・5だんジャンプ']];
+    var n = opts.length;
+    var step = n > 3 ? 158 : 176;          /* カードが ふえたら すこし ちぢめる */
+    var cw = step - 12;                     /* カードの よこはば */
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     opts.forEach(function(o, i){
-      var cx = W / 2 + (i - 1) * 176;
+      var cx = W / 2 + (i - (n - 1) / 2) * step;
       var on = hero === o[0];
       if (on){
         ctx.fillStyle = '#e07a3c';
-        rr(cx - 84, cy - 75, 168, 122, 18);
+        rr(cx - cw / 2 - 3, cy - 75, cw + 6, 122, 18);
       }
       ctx.fillStyle = on ? '#fff4e8' : '#f2ebdf';
-      rr(cx - 81, cy - 72, 162, 116, 16);
+      rr(cx - cw / 2, cy - 72, cw, 116, 16);
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.scale(1.12, 1.12);
+      ctx.scale(1.06, 1.06);
       ctx.globalAlpha = on ? 1 : 0.5;
-      (o[0] === 'boy' ? drawBoy : (o[0] === 'sensei' ? drawSensei : drawGirl))(PICK_DUMMY, 0, 0);
+      heroDraw(o[0])(PICK_DUMMY, 0, 0);
       ctx.restore();
       ctx.fillStyle = on ? '#b4521f' : '#9b8b74';
       ctx.font = 'bold 16px "M PLUS Rounded 1c", system-ui, sans-serif';
       ctx.fillText(o[1], cx, cy + 15);
+      /* せつめいが はみ出さないように 字を ちぢめる */
       ctx.font = '11px "M PLUS Rounded 1c", system-ui, sans-serif';
+      var dw = ctx.measureText(o[2]).width, dmax = cw - 10;
+      if (dw > dmax)
+        ctx.font = Math.max(8, Math.floor(11 * dmax / dw)) +
+          'px "M PLUS Rounded 1c", system-ui, sans-serif';
       ctx.fillStyle = on ? '#8a6448' : '#b0a38d';
       ctx.fillText(o[2], cx, cy + 33);
     });
