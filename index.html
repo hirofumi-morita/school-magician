@@ -994,7 +994,8 @@
       if (k === 'left' || k === 'right'){
         prizePick = (prizePick + (k === 'left' ? PRIZES.length - 1 : 1)) % PRIZES.length;
         beep(760, 0.05, 'square', 0.04);
-      } else if (k === 'jump' || k === 'attack' || k === 'act'){
+      } else if (k === 'jump'){
+        /* きめるのは スペースキーだけ（K や E では きまらない） */
         prize = PRIZES[prizePick];
         state = 'clear';
         melody([[880,0.12],[1046,0.12],[1320,0.28]]);
@@ -4280,8 +4281,8 @@
     } else if (state === 'reward'){
       var rbox = panel('おうさまが おれいを くれた！', [
         'がっこうで つかう ものを ひとつ えらんでね',
-        '← → で えらぶ',
-        '', '', '', ''
+        '', '', '', '', '',
+        '← → で えらんで、スペースキーで けってい！'
       ], 'スペース で もらう', '#3fa860');
       drawPrizePick(rbox.by);
     } else if (state === 'clear'){
