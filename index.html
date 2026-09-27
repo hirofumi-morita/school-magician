@@ -196,6 +196,7 @@
     <span class="chip">おとこのこ＝ハート25こ・2だんジャンプ</span>
     <span class="chip">せんせい＝ハート50こ・つえLv3・7だんジャンプ</span>
     <span class="chip">うちゅうじん＝ハート3こ・5だんジャンプ</span>
+    <span class="chip">ステージごとに オリジナルの BGM</span>
     <span class="chip">水の中では <kbd>スペース</kbd> おしっぱなしで すすむ</span>
     <span class="chip">🍎 きんの リンゴ＝7びょう むてき</span>
     <span class="chip">🪄 いえの だいで つえレベルアップ</span>
@@ -943,6 +944,7 @@
   soundBtn.addEventListener('click', function(){
     muted = !muted;
     soundBtn.textContent = muted ? 'おと：オフ' : 'おと：オン';
+    bgmMute(muted);
   });
   function beep(freq, dur, type, vol){
     if (muted) return;
@@ -961,6 +963,219 @@
   }
   function melody(list){
     list.forEach(function(n, i){ setTimeout(function(){ beep(n[0], n[1], 'triangle', 0.07); }, i * 120); });
+  }
+
+
+  /* ================= BGM（この ゲームの ための オリジナルきょく） ================= */
+  /* おんぷの なまえ → MIDIばんごう（C4 = まんなかの ド） */
+  var NOTE_STEP = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+  function note(nm){
+    var i = 1, v = NOTE_STEP[nm.charAt(0)];
+    if (nm.charAt(1) === '#'){ v++; i = 2; }
+    else if (nm.charAt(1) === 'b'){ v--; i = 2; }
+    return v + (parseInt(nm.slice(i), 10) + 1) * 12;
+  }
+  function hz(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+  function seq(list){
+    return list.map(function(n){ return [n[0] ? note(n[0]) : null, n[1]]; });
+  }
+  /* コードの ルートから ベースの かたちを つくる（[おんかいのさ, ながさ]） */
+  function bassLine(chords, pat){
+    var out = [];
+    chords.forEach(function(c){
+      var root = note(c);
+      pat.forEach(function(q){ out.push([q[0] === null ? null : root + q[0], q[1]]); });
+    });
+    return out;
+  }
+  /* ドラム：1もじ 8ぶおんぷ。k=バスドラ s=スネア h=ハイハット .=やすみ */
+  function drumLine(pat){
+    var out = [], i;
+    for (i = 0; i < pat.length; i++) out.push([pat.charAt(i), 0.5]);
+    return out;
+  }
+
+  var BGM = {
+    /* ともだちの みち：あかるくて あるきたく なる きょく */
+    road: {
+      bpm:132, leadWave:'square', bassWave:'triangle',
+      leadVol:0.075, bassVol:0.085, drumVol:0.075,
+      lead: seq([
+        ['G4',0.5],['A4',0.5],['C5',1],['A4',0.5],['G4',0.5],['E4',1],
+        ['F4',0.5],['G4',0.5],['A4',1],['G4',1],['E4',1],
+        ['G4',0.5],['A4',0.5],['C5',1],['D5',0.5],['C5',0.5],['A4',1],
+        ['G4',1],['E4',1],['D4',1],['C4',1],
+        ['E4',0.5],['G4',0.5],['C5',1],['B4',0.5],['A4',0.5],['G4',1],
+        ['A4',0.5],['B4',0.5],['C5',1],['E5',1],['D5',1],
+        ['C5',0.5],['B4',0.5],['A4',1],['G4',0.5],['E4',0.5],['G4',1],
+        ['F4',1],['E4',1],['D4',1],['C4',1]
+      ]),
+      bass: bassLine(['C3','F3','G3','C3','A2','F3','G3','C3'],
+        [[0,0.5],[null,0.5],[7,0.5],[null,0.5],[0,0.5],[null,0.5],[7,0.5],[null,0.5]]),
+      drum: drumLine('k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.hh')
+    },
+    /* まおうの おしろ：ドキドキする かっこいい きょく */
+    castle: {
+      bpm:146, leadWave:'square', bassWave:'sawtooth',
+      leadVol:0.07, bassVol:0.07, drumVol:0.085,
+      lead: seq([
+        ['A4',0.5],['A4',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['A4',1],
+        ['F4',0.5],['F4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['E4',0.5],['F4',1],
+        ['G4',0.5],['G4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['G4',1],
+        ['E4',0.5],['G#4',0.5],['B4',0.5],['E5',0.5],['D5',1],['B4',1],
+        ['A4',0.5],['C5',0.5],['E5',0.5],['C5',0.5],['A4',1],['E4',1],
+        ['F4',0.5],['A4',0.5],['C5',0.5],['A4',0.5],['F4',1],['C4',1],
+        ['G4',0.5],['B4',0.5],['D5',0.5],['B4',0.5],['G4',1],['D4',1],
+        ['E4',0.5],['G#4',0.5],['B4',0.5],['D5',0.5],['C5',1],['B4',1]
+      ]),
+      bass: bassLine(['A2','F2','G2','E2','A2','F2','G2','E2'],
+        [[0,0.5],[0,0.5],[0,0.5],[7,0.5],[0,0.5],[0,0.5],[7,0.5],[12,0.5]]),
+      drum: drumLine('k.h.s.hkk.h.s.hhk.h.s.hkk.h.s.hhk.h.s.hkk.h.s.hhk.h.s.hkk.hss.hh')
+    },
+    /* こおりの おしろ：つめたくて きらきらした きょく */
+    ice: {
+      bpm:112, leadWave:'triangle', bassWave:'triangle',
+      leadVol:0.095, bassVol:0.075, drumVol:0.05,
+      lead: seq([
+        ['B4',0.5],['E5',0.5],['G5',0.5],['E5',0.5],['B4',1],['G4',1],
+        ['C5',0.5],['E5',0.5],['G5',0.5],['E5',0.5],['C5',1],['G4',1],
+        ['D5',0.5],['G5',0.5],['B5',0.5],['G5',0.5],['D5',1],['B4',1],
+        ['A4',0.5],['D5',0.5],['F#5',0.5],['D5',0.5],['A4',1],['F#4',1],
+        ['E5',1],['G5',1],['B5',1],['A5',1],
+        ['G5',1],['E5',1],['C5',1],['E5',1],
+        ['D5',1],['F#5',1],['A5',1],['B5',1],
+        ['G5',2],['E5',2]
+      ]),
+      bass: bassLine(['E2','C2','G2','D2','E2','C2','D2','E2'],
+        [[0,2],[7,1],[12,1]]),
+      drum: drumLine('..h...h...h...h...h...h...h...h...h...h...h...h...h...h...h...h.')
+    },
+    /* せかいの はて：かいじゅうが あるいて くるような ドスンドスンの きょく */
+    final: {
+      bpm:126, leadWave:'sawtooth', bassWave:'square',
+      leadVol:0.062, bassVol:0.08, drumVol:0.1,
+      lead: seq([
+        ['D4',1],['D4',0.5],['F4',0.5],['D4',1],['A3',1],
+        ['D4',1],['F4',1],['G4',1],['A4',1],
+        ['Bb4',1],['A4',1],['F4',1],['D4',1],
+        ['C5',1],['A4',1],['G4',1],['F4',1],
+        ['D5',1],['D5',0.5],['C5',0.5],['A4',1],['F4',1],
+        ['D5',1],['F5',1],['E5',1],['D5',1],
+        ['Bb4',2],['C5',2],
+        ['A4',2],['A4',1],['A4',1]
+      ]),
+      bass: bassLine(['D2','D2','Bb1','C2','D2','D2','Bb1','A1'],
+        [[0,1],[null,0.5],[0,0.5],[0,1],[12,1]]),
+      drum: drumLine('k..k..s.k..k..ssk..k..s.k..k.sssk..k..s.k..k..ssk..k..s.k.skssss')
+    }
+  };
+  function bgmFor(st){
+    if (st === 2) return 'castle';
+    if (st === 4) return 'ice';
+    if (st === 5) return 'final';
+    return 'road';
+  }
+
+  var bgmGain = null, bgmNoise = null;
+  var bgm = { name:null, track:null, timer:null, voices:null };
+  function bgmAudio(){
+    if (!actx){
+      try { actx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { return false; }
+    }
+    if (actx.state === 'suspended'){ try { actx.resume(); } catch (e) {} }
+    if (!bgmGain){
+      bgmGain = actx.createGain();
+      bgmGain.gain.value = muted ? 0 : 0.34;
+      bgmGain.connect(actx.destination);
+    }
+    return actx.state === 'running';
+  }
+  function bgmNoiseBuf(){
+    if (bgmNoise) return bgmNoise;
+    var n = Math.floor(actx.sampleRate * 0.3);
+    var b = actx.createBuffer(1, n, actx.sampleRate), d = b.getChannelData(0), i;
+    for (i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    bgmNoise = b;
+    return b;
+  }
+  function bgmTone(f, at, dur, type, vol){
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(vol, at + 0.018);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + Math.max(0.06, dur));
+    o.connect(g); g.connect(bgmGain);
+    o.start(at); o.stop(at + dur + 0.05);
+  }
+  function bgmHit(kind, at, vol){
+    if (kind === '.') return;
+    if (kind === 'k'){
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(155, at);
+      o.frequency.exponentialRampToValueAtTime(44, at + 0.13);
+      g.gain.setValueAtTime(vol * 1.5, at);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.17);
+      o.connect(g); g.connect(bgmGain);
+      o.start(at); o.stop(at + 0.2);
+      return;
+    }
+    var sn = kind === 's';
+    var src = actx.createBufferSource(), f = actx.createBiquadFilter(), gg = actx.createGain();
+    src.buffer = bgmNoiseBuf();
+    f.type = 'highpass';
+    f.frequency.value = sn ? 1400 : 7000;
+    var d = sn ? 0.12 : 0.04;
+    gg.gain.setValueAtTime(vol * (sn ? 0.9 : 0.35), at);
+    gg.gain.exponentialRampToValueAtTime(0.0001, at + d);
+    src.connect(f); f.connect(gg); gg.connect(bgmGain);
+    src.start(at); src.stop(at + d + 0.03);
+  }
+  function bgmTick(){
+    if (!bgm.track || !bgmAudio()) return;
+    var t = bgm.track, spb = 60 / t.bpm, ahead = actx.currentTime + 0.5;
+    bgm.voices.forEach(function(v){
+      var list = t[v.key];
+      if (!list || !list.length) return;
+      if (v.time < actx.currentTime) v.time = actx.currentTime + 0.05;
+      var guard = 0;
+      while (v.time < ahead && guard++ < 64){
+        var n = list[v.i % list.length], dur = n[1] * spb;
+        if (n[0] !== null && n[0] !== '.'){
+          if (v.key === 'drum') bgmHit(n[0], v.time, t[v.vol]);
+          else bgmTone(hz(n[0]), v.time, dur * 0.9, t[v.wave], t[v.vol]);
+        }
+        v.time += dur;
+        v.i++;
+      }
+    });
+  }
+  function bgmPlay(name){
+    if (bgm.name === name && bgm.timer) return;
+    bgmStop();
+    var t = BGM[name];
+    if (!t) return;
+    bgm.name = name;
+    bgm.track = t;
+    var t0 = (actx && actx.currentTime || 0) + 0.12;
+    bgm.voices = [
+      { key:'lead', wave:'leadWave', vol:'leadVol', i:0, time:t0 },
+      { key:'bass', wave:'bassWave', vol:'bassVol', i:0, time:t0 },
+      { key:'drum', wave:null,       vol:'drumVol', i:0, time:t0 }
+    ];
+    bgmTick();
+    bgm.timer = setInterval(bgmTick, 90);
+  }
+  function bgmStop(){
+    if (bgm.timer){ clearInterval(bgm.timer); bgm.timer = null; }
+    bgm.name = null;
+    bgm.track = null;
+    bgm.voices = null;
+  }
+  function bgmMute(m){
+    if (bgmGain) bgmGain.gain.value = m ? 0 : 0.34;
   }
 
   /* ================= ゲームの じょうたい ================= */
@@ -1070,14 +1285,14 @@
         if (next){
           carryOver = { hearts:hearts, wandLv:wandLv };
           startStage(next);
-        } else { carryOver = null; reset(1); state = 'title'; }
+        } else { carryOver = null; reset(1); state = 'title'; bgmStop(); }
       }
       keys[k] = true;
       return;
     }
     if (state === 'over'){
       /* ハートが なくなったら キャラを えらぶ がめん（タイトル）に もどる */
-      if (k === 'jump' || k === 'attack' || k === 'act'){ reset(1); state = 'title'; }
+      if (k === 'jump' || k === 'attack' || k === 'act'){ reset(1); state = 'title'; bgmStop(); }
       keys[k] = true;
       return;
     }
@@ -1145,6 +1360,7 @@
   function startStage(n){
     reset(n);
     state = 'play';
+    bgmPlay(bgmFor(n));
     beep(660, 0.1, 'triangle', 0.06);
     setTimeout(function(){ beep(880, 0.12, 'triangle', 0.06); }, 90);
   }
@@ -1328,6 +1544,7 @@
       ebolts = [];
       state = 'reward';
       prizePick = 0;
+      bgmStop();
       melody([[660,0.14],[880,0.14],[1046,0.14],[1320,0.34]]);
       for (i = 0; i < 40; i++)
         particles.push({ kind:'star', x:b.x + b.w / 2 + (Math.random() - 0.5) * 170,
@@ -1987,6 +2204,7 @@
     if (cur.id === 'main' && cur.goalKind !== 'boss' &&
         p.x + p.w > cur.goalX * TILE + 10 && p.y + p.h > (cur.goalTop - 4) * TILE){
       state = 'clear';
+      bgmStop();
       if (best === null || frames < best) best = frames;
       melody([[660,0.14],[880,0.14],[1046,0.14],[1320,0.3]]);
       for (var m = 0; m < 30; m++)
@@ -2146,6 +2364,7 @@
   function gameOver(){
     hearts = 0;
     state = 'over';
+    bgmStop();
     melody([[440,0.16],[350,0.16],[262,0.35]]);
   }
 
